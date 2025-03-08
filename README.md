@@ -152,6 +152,9 @@
 Для соответствия топологии используйте полные доменные имена:
 
 ```bash
+hostnamectl set-hostname isp.au.team.irpo; exec bash
+hostnamectl set-hostname hq-rtr.au.team.irpo; exec bash
+hostnamectl set-hostname br-rtr.au.team.irpo; exec bash
 hostnamectl set-hostname hq-srv.au.team.irpo; exec bash
 hostnamectl set-hostname hq-cli.au.team.irpo; exec bash
 hostnamectl set-hostname br-srv.au.team.irpo; exec bash
@@ -160,11 +163,24 @@ hostnamectl set-hostname br-srv.au.team.irpo; exec bash
 ---
 
 ## 2. Конфигурация IPv4 на JeOS
-проверяем получили ли мы настройки по dhcp командой ip addr
-Если не получили найстройки  DHCP выполняем следующие действия.
 
+### 2.0 настройка hostname
 
-### 2.1 Редактирование конфигурационного файла через Vim
+если вы не задали hostname в самом начала прописываем:
+
+```bash
+hostnamectl set-hostname isp.au.team.irpo; exec bash
+```
+
+### 2.1 проверка настроек по dhcp
+
+проверяем получили ли мы настройки по dhcp командой
+```bash
+ip addr
+```
+Если не получили найстройки  DHCP выполняем настройку.
+
+### 2.2 Редактирование конфигурационного файла через Vim
 
 Откройте файл с настройками для вашего сетевого адаптера:
 
@@ -172,7 +188,8 @@ hostnamectl set-hostname br-srv.au.team.irpo; exec bash
 vi /etc/net/ifaces/<название_сетевого_адаптера>/options
 ```
 
-Если строка `BOOTPROTO=dhcp` отсутствует, войдите в режим вставки (нажмите `i`) или используйте режим замены (нажмите `r`) для её добавления.
+войдите в режим удаление (нажмите `x`) удалите строку `BOOTPROTO=static` потом (нажмите `i`) и напишите `BOOTPROTO=dhcp`.
+После чего нажмите 2 раза сочетание клавиш `ctrl + c` потом cохраните изменения командой `:wq`
 
 #### Полезные команды Vim:
 
@@ -245,7 +262,7 @@ clear
    Если каталогов меньше трёх (один из создаётся по умолчанию), создайте необходимые:
 
     ```bash
-    mkdir /etc/net/ifaces/<название_интерфейса>
+    mkdir /etc/net/ifaces/<название_интерфейса> /etc/net/ifaces/<название_интерфейса>
     ```
 
 3. Отредактируйте файл настроек для каждого интерфейса:
@@ -254,14 +271,11 @@ clear
     nano /etc/net/ifaces/<название_интерфейса>/options
     ```
 
-   Пример содержимого файла:
+  содержимого файла:
 
     ```
     BOOTPROTO=static
     TYPE=eth
-    NM_CONTROLLED=no
-    DISABLED=no
-    CONFIG_IPV4=yes
     ```
 
 4. Сохраните файл (Ctrl+O, затем Ctrl+X) и скопируйте его для других интерфейсов, если это необходимо:
@@ -270,7 +284,7 @@ clear
     cp /etc/net/ifaces/<название_интерфейса>/options /etc/net/ifaces/<название_другого_интерфейса>/options
     ```
 
-5. Создайте файл для задания IP-адреса:
+5. Создайте файл для задания IP-адреса для подсети HQ:
 
     ```bash
     nano /etc/net/ifaces/<название_интерфейса>/ipv4address
@@ -281,13 +295,27 @@ clear
     ```
     172.16.4.1/28
     ```
+6. Создайте файл для задания IP-адреса для подсети BR:
 
-6. Перезагрузите сеть:
+    ```bash
+    nano /etc/net/ifaces/<название_интерфейса>/ipv4address
+    ```
+
+   Пример содержимого:
+
+    ```
+    172.16.5.1/28
+    ```
+7. Перезагрузите сеть:
 
     ```bash
     systemctl restart network
     ```
+8. Проверяем появились ли ip у интерфейсов:
 
+    ```bash
+    ip addr
+    ```
 ---
 
 ## 5. Настройка динамической маршрутизации (NAT)
@@ -359,11 +387,25 @@ net.ipv4.ip_forward = 1
 
 Сохраните изменения (Ctrl+O, затем Ctrl+X).
 
+7. Перезагрузите сеть:
+
+    ```bash
+    systemctl restart network
+    ```
+
 ---
 
 ## 7.  настройка сети для HQ-RTR
 
-### 7.1 Корректировка параметров сетевого интерфейса
+### 7.0 настройка hostname
+
+если вы не задали hostname в самом начала прописываем:
+
+```bash
+hostnamectl set-hostname hq-rtr.au.team.irpo; exec bash
+```
+
+### 7.1 настройка параметров сетевого интерфейса
 
 Откройте файл настроек:
 
@@ -371,21 +413,15 @@ net.ipv4.ip_forward = 1
 vi /etc/net/ifaces/<название_интерфейса>/options
 ```
 
-Измените следующие параметры:
+Удалите следущие строки
 
-- `NM_CONTROLLED=yes` → `NM_CONTROLLED=no`
-- `DISABLED=yes` → `DISABLED=no`
-- `SYSTEMD_CONTROLLED=yes` → `SYSTEMD_CONTROLLED=no`
-
-Сохраните изменения и скопируйте этот файл для второго интерфейса:
-
-```bash
-cp /etc/net/ifaces/<название_интерфейса>/options /etc/net/ifaces/<название_второго_интерфейса>/options
-```
+- `NM_CONTROLLED`
+- `DISABLED`
+- `SYSTEMD_CONTROLLED`
 
 ### 7.2 Настройка IP-адреса
 
-Создайте или отредактируйте файл `ipv4address`:
+Создайте и отредактируйте файл `ipv4address`:
 
 ```bash
 vi /etc/net/ifaces/<название_интерфейса>/ipv4address
@@ -404,13 +440,13 @@ vi /etc/net/ifaces/<название_интерфейса>/ipv4route
 Добавьте строку с маршрутом по умолчанию:
 
 ```
-default via <IP_роутера>/<префикс>
+default via <IP_роутера>
 ```
 
 _Пример:_
 
 ```
-default via 172.16.4.2/28
+default via 172.16.4.1
 ```
 
 ### 7.4 Настройка DNS
@@ -429,8 +465,8 @@ nameserver 172.16.4.1
 
 ### 7.5 Финальные шаги
 
-- Если требуется, удалите `systemd-networkd` для устранения конфликтов.
-- Перезагрузите сетевые сервисы:
+-  удалите `systemd-networkd` для устранения конфликтов с dns сервером.
+- Перезагрузите сеть:
 
   ```bash
   systemctl restart network
@@ -449,3 +485,106 @@ nameserver 172.16.4.1
   ```
 
 ---
+## 8.  настройка сети для BR-RTR
+
+### 8.0 настройка hostname
+
+если вы не задали hostname в самом начала прописываем:
+
+```bash
+hostnamectl set-hostname br-rtr.au.team.irpo; exec bash
+```
+
+### 8.1 настройка параметров сетевого интерфейса
+
+Откройте файл настроек:
+
+```bash
+vi /etc/net/ifaces/<название_интерфейса>/options
+```
+
+Удалите следущие строки
+
+- `NM_CONTROLLED`
+- `DISABLED`
+- `SYSTEMD_CONTROLLED`
+
+### 8.2 Настройка IP-адреса
+
+Создайте и отредактируйте файл `ipv4address`:
+
+```bash
+vi /etc/net/ifaces/<название_интерфейса>/ipv4address
+```
+
+Пропишите IP-адрес с маской, соответствующий подсети роутера (например, `172.16.5.2/28`).
+
+### 8.3 Настройка маршрутизации
+
+Отредактируйте файл `ipv4route`:
+
+```bash
+vi /etc/net/ifaces/<название_интерфейса>/ipv4route
+```
+
+Добавьте строку с маршрутом по умолчанию:
+
+```
+default via <IP_роутера>
+```
+
+_Пример:_
+
+```
+default via 172.16.5.1
+```
+
+### 8.4 Настройка DNS
+
+Отредактируйте файл `resolv.conf`:
+
+```bash
+vi /etc/net/ifaces/<название_интерфейса>/resolv.conf
+```
+
+Добавьте строку с DNS-сервером:
+
+```
+nameserver 172.16.5.1
+```
+
+### 8.5 Финальные шаги
+
+-  удалите `systemd-networkd` для устранения конфликтов с dns сервером командной:.
+ 
+  ```bash
+  apt-get remove systemd-networkd
+  ```
+- Перезагрузите сеть:
+
+  ```bash
+  systemctl restart network
+  ```
+
+- Проверьте доступность DNS-имен:
+
+  ```bash
+  ping ya.ru
+  ```
+
+- Обновите пакеты и установите `nano`:
+
+  ```bash
+  apt-get update -y && apt-get install nano -y
+  ```
+
+---
+## 9. Настройка динамической маршрутизации (NAT)
+
+Настройте маскарадинг для подсетей HQ-RTR и BR-RTR.
+
+### 5.1 Для HQ-RTR
+
+```bash
+iptables -t nat -A POSTROUTING -o <порт_внешней_сети> -s <IP_подсети>/<префикс> -j MASQUERADE
+```
