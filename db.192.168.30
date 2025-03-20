@@ -1,0 +1,14 @@
+$TTL 86400
+@   IN  SOA hq-srv.au.team.irpo. root.au-team.irpo. (
+        2025031901
+        3600
+        1800
+        604800
+        86400 )
+
+    IN  NS  hq-srv.au.team.irpo.
+
+// br-rtr 192.168.30.1 → PTR
+1   IN  PTR  br-rtr.au-team.irpo.
+// br-srv 192.168.30.2 → PTR
+2   IN  PTR  br-srv.au-team.irpo.
