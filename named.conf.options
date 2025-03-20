@@ -1,0 +1,25 @@
+options {
+    directory "/var/cache/bind";
+
+    // Публичные DNS для пересылки
+    forwarders {
+        8.8.8.8;
+        8.8.4.4;
+    };
+    forward first;
+
+    // Включить (или авто) DNSSEC, если требуется
+    dnssec-validation auto;
+
+    // Слушать IPv4/IPv6
+    listen-on-v6 { any; };
+
+    // При необходимости можно настроить ACL для локальных сетей:
+    // acl "hq-network" {
+    //     192.168.10.0/26;
+    //     192.168.20.0/28;
+    //     192.168.30.0/27;
+    // };
+    // allow-query     { hq-network; };
+    // allow-recursion { hq-network; };
+};
