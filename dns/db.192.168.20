@@ -1,12 +1,12 @@
 $TTL 86400
-@   IN  SOA hq-srv.au.team.irpo. root.au-team.irpo. (
-        2025031901
+@   IN  SOA hq-srv.au-team.irpo. admin.au-team.irpo. (
+        2025032501
         3600
         1800
         604800
-        86400 )
+        86400
+)
+    IN  NS hq-srv.au-team.irpo.
 
-    IN  NS  hq-srv.au.team.irpo.
-
-// hq-cli 192.168.20.2 → PTR
-2   IN  PTR  hq-cli.au-team.irpo.
+1   IN  PTR hq-rtr.au-team.irpo.
+2   IN  PTR hq-cli.au-team.irpo.
