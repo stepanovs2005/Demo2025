@@ -1,23 +1,14 @@
-// Зона прямого просмотра (A-записи)
 zone "au-team.irpo" {
     type master;
     file "/etc/bind/db.au-team.irpo";
 };
 
-// Зона обратного просмотра для сети 192.168.10.0/26
 zone "10.168.192.in-addr.arpa" {
     type master;
     file "/etc/bind/db.192.168.10";
 };
 
-// Зона обратного просмотра для сети 192.168.20.0/28
 zone "20.168.192.in-addr.arpa" {
     type master;
     file "/etc/bind/db.192.168.20";
-};
-
-// Зона обратного просмотра для сети 192.168.30.0/27
-zone "30.168.192.in-addr.arpa" {
-    type master;
-    file "/etc/bind/db.192.168.30";
 };
