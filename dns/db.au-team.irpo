@@ -1,20 +1,26 @@
 $TTL 86400
-@   IN  SOA hq-srv.au.team.irpo. root.au-team.irpo. (
-        2025031901 ; serial (YYYYMMDDXX)
+@   IN  SOA hq-srv.au-team.irpo. admin.au-team.irpo. (
+        2025032501 ; serial
         3600       ; refresh
         1800       ; retry
         604800     ; expire
-        86400 )    ; minimum
+        86400      ; minimum
+)
+    IN  NS hq-srv.au-team.irpo.
 
-    IN  NS  hq-srv.au.team.irpo.
+; HQ-RTR — два IP
+hq-rtr  IN  A 192.168.10.1
 
-// A-записи
-hq-rtr   IN  A   192.168.10.1
-br-rtr   IN  A   192.168.30.1
-hq-srv   IN  A   192.168.10.2
-hq-cli   IN  A   192.168.20.2
-br-srv   IN  A   192.168.30.2
+; HQ-SRV — один IP (VLAN100)
+hq-srv  IN  A 192.168.10.2
 
-// CNAME-записи
-moodle   IN  CNAME hq-rtr.au-team.irpo.
-wiki     IN  CNAME hq-rtr.au-team.irpo.
+; HQ-CLI — один IP (VLAN200)
+hq-cli  IN  A 192.168.20.2
+
+; BR-устройства
+br-rtr  IN  A 192.168.30.1
+br-srv  IN  A 192.168.30.2
+
+; CNAME-записи
+moodle  IN  CNAME hq-rtr.au-team.irpo.
+wiki    IN  CNAME hq-rtr.au-team.irpo.
