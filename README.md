@@ -1091,6 +1091,8 @@ sudo su
    ip a
    ```
 
+https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13697-25.html
+
 5. **Установка и настройка OSPF**
 
    Установите пакет `frr`:
