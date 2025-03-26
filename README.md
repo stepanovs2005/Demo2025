@@ -167,6 +167,7 @@
 | BR-RTR           | 192.168.30.1/27                  | 172.16.5.2/28 |
 | BR-SRV           | 192.168.30.2/27                  | 192.168.30.1/27 |
 
+https://jodies.de/ipcalc - ip-калькулятор
 
 ![image](https://github.com/user-attachments/assets/da181112-1d6d-4da9-bc8c-7bacc63d12d5)
 
@@ -179,12 +180,12 @@
 Присваиваем полные доменные имена устройствам согласно топологии:
 
 ```bash
-hostnamectl set-hostname isp.au.team.irpo && exec bash
-hostnamectl set-hostname hq-rtr.au.team.irpo && exec bash
-hostnamectl set-hostname br-rtr.au.team.irpo && exec bash
-hostnamectl set-hostname hq-srv.au.team.irpo && exec bash
-hostnamectl set-hostname hq-cli.au.team.irpo && exec bash
-hostnamectl set-hostname br-srv.au.team.irpo && exec bash
+hostnamectl set-hostname isp && exec bash
+hostnamectl set-hostname hq-rtr.au-team.irpo && exec bash
+hostnamectl set-hostname br-rtr.au-team.irpo && exec bash
+hostnamectl set-hostname hq-srv.au-team.irpo && exec bash
+hostnamectl set-hostname hq-cli.au-team.irpo && exec bash
+hostnamectl set-hostname br-srv.au-team.irpo && exec bash
 ```
 
 ---
@@ -193,7 +194,7 @@ hostnamectl set-hostname br-srv.au.team.irpo && exec bash
 
 #### 2.1 Задание hostname (если не задан)
 ```bash
-hostnamectl set-hostname isp.au.team.irpo && exec bash
+hostnamectl set-hostname isp.au-team.irpo && exec bash
 ```
 
 #### 2.2 Проверка получения настроек DHCP
@@ -299,7 +300,7 @@ systemctl restart network
 
 #### 7.1 Задание hostname (если не задан)
 ```bash
-hostnamectl set-hostname hq-rtr.au.team.irpo && exec bash
+hostnamectl set-hostname hq-rtr.au-team.irpo && exec bash
 ```
 #### 7.2 Конфигурация интерфейса
 
@@ -338,9 +339,19 @@ nano /etc/net/ifaces/ens33/resolv.conf
 nameserver 172.16.4.1
 ```
 
+удалите `systemd-networkd`:
+```bash
+apt-get remove systemd-networkd
+```
+
 Перезагрузите сеть:
 ```bash
 systemctl restart network
+```
+
+Проверьте доступность DNS:
+```bash
+ping ya.ru
 ```
 
 ---
@@ -348,6 +359,15 @@ systemctl restart network
 ### 8. Настройка NAT для офиса HQ
 
 #### 8.1 Задание IP-адреса для офиса HQ
+Сначала Отредактируйте файл настроек:
+   ```bash
+   nano /etc/net/ifaces/ens33/options
+   ```
+   Пример содержимого:
+   ```bash
+   BOOTPROTO=static
+   TYPE=eth
+   ```
 
 В файле `/etc/net/ifaces/ens33/ipv4address` укажите:
 ```
@@ -375,7 +395,7 @@ systemctl restart network
 
 #### 9.1 Задание hostname (если не установлен)
 ```bash
-hostnamectl set-hostname br-rtr.au.team.irpo && exec bash
+hostnamectl set-hostname br-rtr.au-team.irpo && exec bash
 ```
 
 #### 9.2 Конфигурация интерфейса
@@ -747,7 +767,7 @@ vi /etc/net/ifaces/ens33/resolv.conf
 nameserver 192.168.10.1
 ```
 
-При необходимости удалите `systemd-networkd`:
+удалите `systemd-networkd`:
 ```bash
 apt-get remove systemd-networkd
 ```
