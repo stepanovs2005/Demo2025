@@ -168,6 +168,7 @@
 | BR-SRV           | 192.168.30.2/27                  | 192.168.30.1/27 |
 
 
+![image](https://github.com/user-attachments/assets/da181112-1d6d-4da9-bc8c-7bacc63d12d5)
 
 ---
 
