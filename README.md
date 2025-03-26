@@ -1265,6 +1265,14 @@ sudo su
 
 #### 19.1 Конфигурация DNS (BIND)
 
+gclnk.com/p3STJhug db.192.168.10
+gclnk.com/Z7czmF7J db.192.168.20
+gclnk.com/nRdfbAOr db.192.168.30
+gclnk.com/4emEp6Xo db.au-team.irpo
+gclnk.com/RnsyEXIX named.conf
+gclnk.com/Ce9hyOKh named.conf.local
+gclnk.com/shqRkehF named.conf.options
+
 1. Создайте файл `/etc/bind/named.conf` (если отсутствует) и подключите остальные файлы:
    ```bash
    include "/etc/bind/named.conf.options";
@@ -1418,6 +1426,9 @@ sudo su
    nslookup hq-rtr.au-team.irpo 127.0.0.1
    nslookup 192.168.10.1 127.0.0.1
    ```
+
+
+gclnk.com/yNdsd0ur dhcpd.conf
 
 #### 19.2 Конфигурация DHCP
 
