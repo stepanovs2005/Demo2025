@@ -309,7 +309,7 @@ hostnamectl set-hostname hq-rtr.au-team.irpo && exec bash
 ```
 #### 7.2 Конфигурация интерфейса
 
-Отредактируйте файл `/etc/net/ifaces/ens33/options` и удалите лишние строки (например, `NM_CONTROLLED`, `DISABLED`, `SYSTEMD_CONTROLLED`).
+Отредактируйте файл `/etc/net/ifaces/ens33/options` и удалите лишние строки (например, `NM_CONTROLLED`, `SYSTEMD_CONTROLLED`).
 
 #### 7.3 Задание IP-адреса
 
@@ -607,7 +607,7 @@ sudo su
    ```
 2. Отредактируйте файл настроек:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.hq.100/options
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.100/options
    ```
    Пример содержимого:
    ```
@@ -636,7 +636,7 @@ sudo su
    ```
 2. Отредактируйте файл настроек:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.hq.200/options
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.200/options
    ```
    Пример содержимого:
    ```
@@ -650,7 +650,7 @@ sudo su
    ```
 3. Создайте файл для задания IP-адреса:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.hq.200/ipv4address
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.200/ipv4address
    ```
    Укажите IP-адрес в формате `ip/mask`.
 
@@ -1038,8 +1038,6 @@ sudo su
    TUNREMOTE=172.16.5.2
    TUNTYPE=gre
    TYPE=iptun
-   TUNTTL=64
-   TUNMTU=1476
    TUNOPTIONS='ttl 64'
    ```
 
@@ -1047,7 +1045,7 @@ sudo su
 
    Создайте файл:
    ```bash
-   vi /etc/net/ifaces/gre1/ipv4address
+ nano /etc/net/ifaces/gre1/ipv4address
    ```
    Пример:
    ```
