@@ -174,6 +174,11 @@ https://jodies.de/ipcalc - ip-калькулятор
 ---
 
 ## Решение
+### 0.0 Настройка временых зон
+Делаем везде одной команой на isp надо установить tzdata командой apt-get install tzdata -y
+```bash
+timedatactl set-zone Asia/Novosibirsk
+```
 
 ### 1. Настройка имён устройств
 
@@ -197,7 +202,7 @@ hostnamectl set-hostname br-srv.au-team.irpo && exec bash
 hostnamectl set-hostname isp.au-team.irpo && exec bash
 ```
 
-#### 2.2 Проверка получения настроек DHCP
+#### 2.2 Проверка получения настроек DHCP (isp) 
 
 Проверьте командой:
 ```bash
@@ -207,7 +212,7 @@ ip addr
 
 ---
 
-### 3. Перезагрузка сети и обновление пакетов
+### 3. Перезагрузка сети и обновление пакетов (isp)
 
 Перезапуск сетевых сервисов и установка необходимых пакетов:
 ```bash
@@ -218,7 +223,7 @@ clear
 
 ---
 
-### 4. Настройка сетевых адаптеров
+### 4. Настройка сетевых адаптеров (isp)
 
 1. Определите имя сетевого адаптера командой:
    ```bash
@@ -336,7 +341,7 @@ nano /etc/net/ifaces/ens33/resolv.conf
 ```
 Пример:
 ```
-nameserver 172.16.4.1
+nameserver 8.8.8.8
 ```
 
 удалите `systemd-networkd`:
@@ -598,7 +603,7 @@ sudo su
 
 1. Создайте каталог для подинтерфейса (замените `<имя_физического_интерфейса>` на фактическое имя, например, `ens34`):
    ```bash
-   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.hq.100
+   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.100
    ```
 2. Отредактируйте файл настроек:
    ```bash
@@ -616,7 +621,7 @@ sudo su
    ```
 3. Создайте файл для задания IP-адреса:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.hq.100/ipv4address
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.100/ipv4address
    ```
    Пример:
    ```
@@ -627,7 +632,7 @@ sudo su
 
 1. Создайте каталог для подинтерфейса:
    ```bash
-   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.hq.200
+   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.200
    ```
 2. Отредактируйте файл настроек:
    ```bash
@@ -653,11 +658,11 @@ sudo su
 
 1. Создайте каталог для подинтерфейса:
    ```bash
-   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.hq.999
+   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.999
    ```
 2. Отредактируйте файл настроек:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.hq.999/options
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.999/options
    ```
    Пример содержимого:
    ```
@@ -671,50 +676,13 @@ sudo su
    ```
 3. Создайте файл для задания IP-адреса:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.hq.999/ipv4address
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.999/ipv4address
    ```
    Укажите IP-адрес в формате `ip/mask`.
 4. Перезагрузите сеть:
    ```bash
    systemctl restart network
    ```
-
-#### 13.4 Настройка VLAN на BR-RTR (для VLAN999)
-
-<details>
-  <summary>Развернуть инструкцию</summary>
-  
-1. Создайте каталог для подинтерфейса (замените `<имя_физического_интерфейса>`, например, на `ens33`):
-   ```bash
-   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.br.999
-   ```
-2. Отредактируйте файл настроек:
-   ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.br.999/options
-   ```
-   Пример содержимого:
-   ```
-   TYPE=vlan
-   HOST=ens33
-   VID=999
-   DISABLED=no
-   BOOTPROTO=static
-   ONBOOT=yes
-   CONFIG_IPV4=yes
-   ```
-3. Создайте файл для задания IP-адреса:
-   ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.br.999/ipv4address
-   ```
-   Укажите IP-адрес в формате `ip/mask`.
-4. Перезагрузите сеть:
-   ```bash
-   systemctl restart network
-   ```
-  
-</details>
-
----
 
 ### 14. Настройка HQ-SRV
 
@@ -722,6 +690,7 @@ sudo su
 ```bash
 hostnamectl set-hostname hq-srv.au.team.irpo && exec bash
 ```
+---
 
 #### 14.2 Настройка интерфейса
 
@@ -764,7 +733,7 @@ vi /etc/net/ifaces/ens33/resolv.conf
 ```
 Пример:
 ```
-nameserver 192.168.10.1
+nameserver 8.8.8.8
 ```
 
 удалите `systemd-networkd`:
@@ -1123,7 +1092,7 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
    ```bash
    vtysh
    ```
-   Внутри выполните следующие команды:
+   Внутри выполните следующие команды: ('это конфиг уже готовый написание команд может быть не множно отличатся делайте tab)
    ```
    show running-config    # Просмотр текущей конфигурации (при необходимости удалите ненужные интерфейсы)
    conf t
@@ -1266,6 +1235,9 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
 ### 19. Настройка DNS и DHCP
 
 #### 19.1 Конфигурация DNS (BIND)
+пару файлов options.local и зоны и ещё 
+![6089067937353810310](https://github.com/user-attachments/assets/db95f378-a8d0-409a-93ac-ec345c1f6187)
+
 
 gclnk.com/p3STJhug db.192.168.10
 
