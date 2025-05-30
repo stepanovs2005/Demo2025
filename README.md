@@ -199,7 +199,7 @@ hostnamectl set-hostname br-srv.au-team.irpo && exec bash
 
 #### 2.1 Задание hostname (если не задан)
 ```bash
-hostnamectl set-hostname isp.au-team.irpo && exec bash
+hostnamectl set-hostname isp && exec bash
 ```
 
 #### 2.2 Проверка получения настроек DHCP (isp) 
@@ -208,7 +208,10 @@ hostnamectl set-hostname isp.au-team.irpo && exec bash
 ```bash
 ip addr
 ```
-Если настройки не получены – настройте DHCP, отредактировав соответствующий конфигурационный файл (например, `/etc/net/ifaces/ens33/options`).
+Если настройки не получены – настройте DHCP, отредактировав соответствующий конфигурационный файл (например, `/etc/net/ifaces/ens192/options`).
+Внутри него 
+BOOTPROTO=dhcp
+TYPE=eth
 
 ---
 
