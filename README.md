@@ -365,7 +365,7 @@ ping ya.ru
 ```
 Установите frr:
 ```bash
-apt-get update && apt-get install frr
+apt-get update && apt-get install frr dhcp-server wget bind-utils
 ```
 
 #### 7.5 Создание VLAN для офиса HQ - VLAN100 (У ВАС БУДУТ ОТЛИЧАТСЯ VLAN)
@@ -827,7 +827,7 @@ ping ya.ru
 
 Обновите пакеты и установите bind:
 ```bash
-apt-get update -y && apt-get install bind bind-utils
+apt-get update -y && apt-get install bind bind-utils wget
 ```
 
 ---
@@ -1136,7 +1136,7 @@ sudo su
    ```
    Отредактируйте конфигурационный файл демонов:
    ```bash
-   mcedit /etc/frr/demons
+   mcedit /etc/frr/daemons
    ```
    Найдите строку:
    ```
@@ -1235,7 +1235,7 @@ sudo su
    ```
    Отредактируйте конфигурационный файл демонов:
    ```bash
-   mcedit /etc/frr/demons
+   mcedit /etc/frr/daemons
    ```
    Найдите строку:
    ```
@@ -1290,169 +1290,50 @@ sudo su
 
 ---
 
-### 19. Настройка DNS и DHCP
+### 19. Настройка DHCP и DNS
+
+#### 19.1 Конфигурация DHCP
+
+1. перейдите в папку /etc/dhcp/ В ней скачайте файл yNdsd0ur командой wget -O dhcpd.conf gclnk.com/yNdsd0ur и отредактируй под себя командой:
+
+   ```bash
+   mcedit /etc/dhcp/dhcpd.conf
+   ```
+   После чего идёт в файл dhcpd командой
+
+   ```bash
+   mcedit /etc/sysconfig/dhcpd
+   ```
+Внутри пишем интерфейс который будет слушать клиент например ens224.200 
+  
+  ```bash
+  DHCPDARGS=ens224.200
+   ```
+Перезагружаем сервер systemctl restart dhcpd и добавляем его в авто загрузку systemctl enable dhcpd
+
+6. На клиенте (например, HQ-CLI) Отключаем Network-manager если:
+   ```bash
+   sudo dhclient -r
+   sudo dhclient
+   ip addr
+   ```
+   Клиент должен получить адрес из диапазона 192.168.20.2–192.168.20.14, шлюз 192.168.20.1 и DNS 192.168.10.2.
+
 
 #### 19.1 Конфигурация DNS (BIND)
-пару файлов options.local и зоны и ещё 
-![6089067937353810310](https://github.com/user-attachments/assets/db95f378-a8d0-409a-93ac-ec345c1f6187)
+сначала идём в options mcedit /etc/bind/options.conf тут делаем как на картинке сохраняем и перезагружаем bind командой systemctl restart bind и проверяем nslookup если всё хорошо копируем файлы которые ниже
 
+![image](https://github.com/user-attachments/assets/409ae1c6-929b-4acb-9f28-fcb97e90aab1)
 
+Потом копируем файлы 
 gclnk.com/p3STJhug db.192.168.10
 
 gclnk.com/Z7czmF7J db.192.168.20
 
-gclnk.com/nRdfbAOr db.192.168.30
-
 gclnk.com/4emEp6Xo db.au-team.irpo
 
-gclnk.com/RnsyEXIX named.conf
+gclnk.com/Ce9hyOKh local.conf
 
-gclnk.com/Ce9hyOKh named.conf.local
-
-gclnk.com/shqRkehF named.conf.options
-
-
-1. Создайте файл `/etc/bind/named.conf` (если отсутствует) и подключите остальные файлы:
-   ```bash
-   include "/etc/bind/named.conf.options";
-   include "/etc/bind/named.conf.local";
-   include "/etc/bind/named.conf.default-zones";
-   ```
-2. Создайте файл `/etc/bind/named.conf.options`:
-   ```bash
-   nano /etc/bind/named.conf.options
-   ```
-   Пример содержимого:
-   ```conf
-   options {
-       directory "/var/cache/bind";
-
-       // Публичные DNS для пересылки
-       forwarders {
-           8.8.8.8;
-           8.8.4.4;
-       };
-       forward first;
-
-       // Включить (или авто) DNSSEC, если требуется
-       dnssec-validation auto;
-
-       // Слушать IPv4/IPv6
-       listen-on-v6 { any; };
-
-       // При необходимости можно настроить ACL для локальных сетей:
-       // acl "hq-network" {
-       //     192.168.10.0/26;
-       //     192.168.20.0/28;
-       //     192.168.30.0/27;
-       // };
-       // allow-query     { hq-network; };
-       // allow-recursion { hq-network; };
-   };
-   ```
-3. Создайте файл `/etc/bind/named.conf.local`:
-   ```bash
-   nano /etc/bind/named.conf.local
-   ```
-   Пример содержимого:
-   ```conf
-   // Зона прямого просмотра (A-записи)
-   zone "au-team.irpo" {
-       type master;
-       file "/etc/bind/db.au-team.irpo";
-   };
-
-   // Зона обратного просмотра для сети 192.168.10.0/26
-   zone "10.168.192.in-addr.arpa" {
-       type master;
-       file "/etc/bind/db.192.168.10";
-   };
-
-   // Зона обратного просмотра для сети 192.168.20.0/28
-   zone "20.168.192.in-addr.arpa" {
-       type master;
-       file "/etc/bind/db.192.168.20";
-   };
-
-   // Зона обратного просмотра для сети 192.168.30.0/27
-   zone "30.168.192.in-addr.arpa" {
-       type master;
-       file "/etc/bind/db.192.168.30";
-   };
-   ```
-4. Создайте файлы зоны:
-   - Файл зоны прямого просмотра: `/etc/bind/db.au-team.irpo`
-     ```conf
-     $TTL 86400
-     @   IN  SOA hq-srv.au.team.irpo. root.au-team.irpo. (
-             2025031901 ; serial (YYYYMMDDXX)
-             3600       ; refresh
-             1800       ; retry
-             604800     ; expire
-             86400 )    ; minimum
-
-         IN  NS  hq-srv.au.team.irpo.
-
-     // A-записи
-     hq-rtr   IN  A   192.168.10.1
-     br-rtr   IN  A   192.168.30.1
-     hq-srv   IN  A   192.168.10.2
-     hq-cli   IN  A   192.168.20.2
-     br-srv   IN  A   192.168.30.2
-
-     // CNAME-записи
-     moodle   IN  CNAME hq-rtr.au-team.irpo.
-     wiki     IN  CNAME hq-rtr.au-team.irpo.
-     ```
-   - Файл зоны обратного просмотра для 192.168.10.0/26: `/etc/bind/db.192.168.10`
-     ```conf
-     $TTL 86400
-     @   IN  SOA hq-srv.au.team.irpo. root.au-team.irpo. (
-             2025031901
-             3600
-             1800
-             604800
-             86400 )
-
-         IN  NS  hq-srv.au.team.irpo.
-
-     // hq-rtr 192.168.10.1 → PTR
-     1   IN  PTR  hq-rtr.au-team.irpo.
-     // hq-srv 192.168.10.2 → PTR
-     2   IN  PTR  hq-srv.au-team.irpo.
-     ```
-   - Файл зоны обратного просмотра для 192.168.20.0/28: `/etc/bind/db.192.168.20`
-     ```conf
-     $TTL 86400
-     @   IN  SOA hq-srv.au.team.irpo. root.au-team.irpo. (
-             2025031901
-             3600
-             1800
-             604800
-             86400 )
-
-         IN  NS  hq-srv.au.team.irpo.
-
-     // hq-cli 192.168.20.2 → PTR
-     2   IN  PTR  hq-cli.au-team.irpo.
-     ```
-   - Файл зоны обратного просмотра для 192.168.30.0/27: `/etc/bind/db.192.168.30`
-     ```conf
-     $TTL 86400
-     @   IN  SOA hq-srv.au.team.irpo. root.au-team.irpo. (
-             2025031901
-             3600
-             1800
-             604800
-             86400 )
-
-         IN  NS  hq-srv.au.team.irpo.
-
-     // br-rtr 192.168.30.1 → PTR
-     1   IN  PTR  br-rtr.au-team.irpo.
-     // br-srv 192.168.30.2 → PTR
-     2   IN  PTR  br-srv.au-team.irpo.
-     ```
 5. Проверьте конфигурацию:
    ```bash
    sudo named-checkconf
@@ -1465,55 +1346,3 @@ gclnk.com/shqRkehF named.conf.options
    nslookup hq-rtr.au-team.irpo 127.0.0.1
    nslookup 192.168.10.1 127.0.0.1
    ```
-
-
-gclnk.com/yNdsd0ur dhcpd.conf
-
-#### 19.2 Конфигурация DHCP
-
-1. Обновите список пакетов и установите `isc-dhcp-server`:
-   ```bash
-   sudo apt-get update -y
-   sudo apt-get install isc-dhcp-server -y
-   ```
-2. Отредактируйте файл `/etc/dhcp/dhcpd.conf`:
-   ```bash
-   nano /etc/dhcp/dhcpd.conf
-   ```
-   Пример минимальной конфигурации (для сети VLAN200, 192.168.20.0/28, где HQ-RTR имеет IP 192.168.20.1):
-   ```conf
-   default-lease-time 600;
-   max-lease-time 7200;
-
-   option domain-name "au-team.irpo";
-   option domain-name-servers 192.168.10.2;   # HQ-SRV (DNS)
-   authoritative;
-
-   subnet 192.168.20.0 netmask 255.255.255.240 {
-       range 192.168.20.2 192.168.20.14;
-       option routers 192.168.20.1;
-   }
-   ```
-3. Укажите интерфейс для DHCP в файле `/etc/default/isc-dhcp-server` (например, если VLAN200 поднят как `ens33.200`):
-   ```conf
-   INTERFACESv4="ens33.200"
-   INTERFACESv6=""
-   ```
-   (В RHEL/ALT файл: `/etc/sysconfig/dhcpd` с переменной `DHCPD_IFACES="ens33.200"`. )
-4. Запустите и включите сервис:
-   ```bash
-   sudo systemctl enable isc-dhcp-server
-   sudo systemctl start isc-dhcp-server
-   ```
-5. Для проверки просмотрите логи:
-   ```bash
-   sudo journalctl -u isc-dhcp-server
-   grep dhcp /var/log/syslog
-   ```
-6. На клиенте (например, HQ-CLI) обновите DHCP-клиент:
-   ```bash
-   sudo dhclient -r
-   sudo dhclient
-   ip addr
-   ```
-   Клиент должен получить адрес из диапазона 192.168.20.2–192.168.20.14, шлюз 192.168.20.1 и DNS 192.168.10.2.
