@@ -1,3 +1,4 @@
+include "/etc/bind/rfc1912.conf"
 zone "au-team.irpo" {
     type master;
     file "/etc/bind/db.au-team.irpo";
