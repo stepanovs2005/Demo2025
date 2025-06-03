@@ -436,7 +436,8 @@ apt-get update && apt-get install frr
    ```
 2. Отредактируйте файл настроек:
    ```bash
-mcedit /etc/net/ifaces/<имя_физического_интерфейса>.999/options
+   mcedit /etc/net/ifaces/<имя_физического_интерфейса>.999/options
+   
    ```
    Пример содержимого:
    ```
