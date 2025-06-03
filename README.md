@@ -162,7 +162,7 @@
 | HQ-RTR (VLAN100)  | 192.168.10.1/26                  | 192.168.10.1 | 
 | HQ-RTR (VLAN200)  | 192.168.20.1/28                  | 192.168.20.1 |
 | HQ-RTR (VLAN999)  | 192.168.99.1/29                  | 192.168.99.1 | 
-| HQ-CLI           | 192.168.20.2/28, 192.168.99.2/29  | 192.168.20.1/28,192,168,99,1/29 |
+| HQ-CLI           | 192.168.20.2/28, 192.168.99.2/29  | 192.168.20.1/28|
 | HQ-SRV           | 192.168.10.2/26                  | 192.168.10.1/26 |
 | BR-RTR           | 192.168.30.1/27                  | 172.16.5.2/28 |
 | BR-SRV           | 192.168.30.2/27                  | 192.168.30.1/27 |
@@ -208,7 +208,9 @@ hostnamectl set-hostname isp && exec bash
 ```bash
 ip addr
 ```
-Если настройки не получены – настройте DHCP, отредактировав соответствующий конфигурационный файл (например, `/etc/net/ifaces/ens192/options`).
+После чего пишем dhcpd и устанавливаем mc - apt-get update && apt-get install mc tzdata iptables после чего создаём интерфейсы (не забудь поменять сети br с hq в настройках это если что для Стёпы)
+
+настройте DHCP, отредактировав соответствующий конфигурационный файл (`/etc/net/ifaces/ens192/options`).
 Внутри него 
 BOOTPROTO=dhcp
 TYPE=eth
@@ -232,13 +234,13 @@ clear
    ```bash
    ip addr
    ```
-2. Создайте каталог для интерфейса (например, для `ens33`):
+2. Создайте каталог для интерфейса для ens224 ( ` в моём случае это hq у вас будет br если не поменяют`):
    ```bash
-   mkdir -p /etc/net/ifaces/ens33
+   mkdir /etc/net/ifaces/ens224
    ```
 3. Отредактируйте файл настроек:
    ```bash
-   nano /etc/net/ifaces/ens33/options
+   nano /etc/net/ifaces/ens224/options
    ```
    Пример содержимого:
    ```bash
@@ -247,13 +249,13 @@ clear
    ```
 4. Создайте файл для задания IP-адреса (например, для подсети HQ):
    ```bash
-   nano /etc/net/ifaces/ens33/ipv4address
+   nano /etc/net/ifaces/ens224/ipv4address
    ```
    Пример:
    ```
    172.16.4.1/28
    ```
-5. Аналогичным образом задайте IP-адреса для других подсетей и перезагрузите сеть:
+5. Аналогичным образом задайте IP-адреса для ens256 в сторону hq в моём случае это br и перезагрузите сеть:
    ```bash
    systemctl restart network
    ip addr
@@ -265,14 +267,16 @@ clear
 
 Для обеспечения доступа к Интернету настройте маскарадинг для соответствующих подсетей.
 
-#### 5.1 Пример для HQ-RTR:
+IP АДРЕСА БУДУТ ДРУГИЕ ЭТИ АДРЕСА ВЫБРАНЫ В КАЧЕСТВЕ ПРИМЕРА
+
+#### 5.1 Пример для подсети HQ-RTR:
 ```bash
-iptables -t nat -A POSTROUTING -o ens33 -s 172.16.4.0/28 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o ens192 -s 172.16.4.0/28 -j MASQUERADE
 ```
 
-#### 5.2 Пример для BR-RTR:
+#### 5.2 Пример для подсети BR-RTR:
 ```bash
-iptables -t nat -A POSTROUTING -o ens33 -s 172.16.5.0/28 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o ens192 -s 172.16.5.0/28 -j MASQUERADE
 ```
 
 Сохраните правила:
@@ -306,21 +310,28 @@ systemctl restart network
 
 ### 7. Настройка сети для HQ-RTR
 
+#### 7.0 Задание Часового пояса (если не задан)
+```bash
+timedatectl set-timezone Asia/Novosibirsk
+```
+
 #### 7.1 Задание hostname (если не задан)
 ```bash
 hostnamectl set-hostname hq-rtr.au-team.irpo && exec bash
 ```
+
 #### 7.2 Конфигурация интерфейса
 
-Отредактируйте файл `/etc/net/ifaces/ens33/options` и удалите лишние строки (например, `NM_CONTROLLED`, `SYSTEMD_CONTROLLED`).
+Отредактируйте файл `/etc/net/ifaces/ens192/options` тут нечего не надо редактировать 
 
 #### 7.3 Задание IP-адреса
 
 Создайте или отредактируйте файл:
 ```bash
-nano /etc/net/ifaces/ens33/ipv4address
+mcedit /etc/net/ifaces/ens192/ipv4address
 ```
-Пример:
+ЭТО ПРИМЕР У ВАС БУДУТ ДРУГИЕ IP
+Пишем:
 ```
 172.16.4.2/28
 ```
@@ -347,11 +358,6 @@ nano /etc/net/ifaces/ens33/resolv.conf
 nameserver 8.8.8.8
 ```
 
-удалите `systemd-networkd`:
-```bash
-apt-get remove systemd-networkd
-```
-
 Перезагрузите сеть:
 ```bash
 systemctl restart network
@@ -361,7 +367,95 @@ systemctl restart network
 ```bash
 ping ya.ru
 ```
+#### 7.5 Создание VLAN для офиса HQ - VLAN100 (У ВАС БУДУТ ОТЛИЧАТСЯ VLAN)
 
+0. Создайте папку физического интерфейса к примеру ens224 и внутри создайте options со следущим содержимым BOOTPROTO=static TYPE=eth
+
+1. Создайте каталог для подинтерфейса (замените `<имя_физического_интерфейса>` на фактическое имя, например, `ens224`):
+   ```bash
+   mkdir /etc/net/ifaces/<имя_физического_интерфейса>.100
+   ```
+2. Отредактируйте файл настроек:
+   ```bash
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.100/options
+   ```
+   Пример содержимого:
+   ```
+   TYPE=vlan
+   HOST=ens224
+   VID=100
+   DISABLED=no
+   BOOTPROTO=static
+   ONBOOT=yes
+   CONFIG_IPV4=yes
+   ```
+3. Создайте файл для задания IP-адреса:
+   ```bash
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.100/ipv4address
+   ```
+   Пример:
+   ```
+   192.168.10.2/26
+   ```
+У вас vlan будет отличатся
+Скопируйте файл options из ens224.100 в папку ens224.200 и ens224.999
+и вам надо будет просто отредактировать VID=ваш vlan по заданию
+
+#### 13.2 Создание VLAN для офиса HQ – VLAN200
+
+1. Создайте каталог для подинтерфейса:
+   ```bash
+   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.200
+   ```
+2. Отредактируйте файл настроек:
+   ```bash
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.200/options
+   ```
+   Пример содержимого:
+   ```
+   TYPE=vlan
+   HOST=ens224
+   VID=200
+   DISABLED=no
+   BOOTPROTO=static
+   ONBOOT=yes
+   CONFIG_IPV4=yes
+   ```
+3. Создайте файл для задания IP-адреса:
+   ```bash
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.200/ipv4address
+   ```
+   Укажите IP-адрес в формате `ip/mask`.
+
+#### 13.3 Создание VLAN для управления – VLAN999
+
+1. Создайте каталог для подинтерфейса:
+   ```bash
+   mkdir /etc/net/ifaces/<имя_физического_интерфейса>.999
+   ```
+2. Отредактируйте файл настроек:
+   ```bash
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.999/options
+   ```
+   Пример содержимого:
+   ```
+   TYPE=vlan
+   HOST=ens224
+   VID=999
+   DISABLED=no
+   BOOTPROTO=static
+   ONBOOT=yes
+   CONFIG_IPV4=yes
+   ```
+3. Создайте файл для задания IP-адреса:
+   ```bash
+   nano /etc/net/ifaces/<имя_физического_интерфейса>.999/ipv4address
+   ```
+   Укажите IP-адрес в формате `ip/mask`.
+4. Перезагрузите сеть:
+   ```bash
+   systemctl restart network
+   ```
 ---
 
 ### 8. Настройка NAT для офиса HQ
@@ -599,93 +693,6 @@ sudo su
 </details>
 
 ---
-
-### 13. Настройка VLAN
-
-#### 13.1 Создание VLAN для офиса HQ – VLAN100
-
-1. Создайте каталог для подинтерфейса (замените `<имя_физического_интерфейса>` на фактическое имя, например, `ens34`):
-   ```bash
-   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.100
-   ```
-2. Отредактируйте файл настроек:
-   ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.100/options
-   ```
-   Пример содержимого:
-   ```
-   TYPE=vlan
-   HOST=ens34
-   VID=100
-   DISABLED=no
-   BOOTPROTO=static
-   ONBOOT=yes
-   CONFIG_IPV4=yes
-   ```
-3. Создайте файл для задания IP-адреса:
-   ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.100/ipv4address
-   ```
-   Пример:
-   ```
-   192.168.10.2/26
-   ```
-
-#### 13.2 Создание VLAN для офиса HQ – VLAN200
-
-1. Создайте каталог для подинтерфейса:
-   ```bash
-   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.200
-   ```
-2. Отредактируйте файл настроек:
-   ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.200/options
-   ```
-   Пример содержимого:
-   ```
-   TYPE=vlan
-   HOST=ens34
-   VID=200
-   DISABLED=no
-   BOOTPROTO=static
-   ONBOOT=yes
-   CONFIG_IPV4=yes
-   ```
-3. Создайте файл для задания IP-адреса:
-   ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.200/ipv4address
-   ```
-   Укажите IP-адрес в формате `ip/mask`.
-
-#### 13.3 Создание VLAN для управления – VLAN999
-
-1. Создайте каталог для подинтерфейса:
-   ```bash
-   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.999
-   ```
-2. Отредактируйте файл настроек:
-   ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.999/options
-   ```
-   Пример содержимого:
-   ```
-   TYPE=vlan
-   HOST=ens34
-   VID=999
-   DISABLED=no
-   BOOTPROTO=static
-   ONBOOT=yes
-   CONFIG_IPV4=yes
-   ```
-3. Создайте файл для задания IP-адреса:
-   ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.999/ipv4address
-   ```
-   Укажите IP-адрес в формате `ip/mask`.
-4. Перезагрузите сеть:
-   ```bash
-   systemctl restart network
-   ```
 
 ### 14. Настройка HQ-SRV
 
