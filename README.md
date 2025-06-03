@@ -1313,7 +1313,7 @@ sudo su
 
 6. На клиенте (например, HQ-CLI) Отключаем Network-manager если не отлючили в самом начале командой:
    ```bash
-systemctl disable --now Network-manager 
+    systemctl disable --now Network-manager 
    ```
 Теперь идёт в сетевой интерфейс клиента например ens192 и в файле options меняем на NV_CONTROLLED=no и DISABLED=no и создаём папку саб интерфейса командой mkdir /etc/net/ifaces192.200 и внутри файл options со следущим содержимым
 
