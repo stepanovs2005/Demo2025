@@ -1108,6 +1108,7 @@ sudo su
    TUNTYPE=gre
    TYPE=iptun
    TUNOPTIONS='ttl 64'
+   HOST=ens192
    ```
 
 3. **Настройка IP-адреса туннеля**
@@ -1127,9 +1128,7 @@ sudo su
    ip a
    ```
 
-https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13697-25.html
-
-5. **Настройка OSPF**
+5. **Настройка frr**
 
    Добавьте службу `frr` в автозагрузку:
    ```bash
@@ -1159,19 +1158,20 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
    ```bash
    vtysh
    ```
-   Внутри выполните следующие команды: ('это конфиг уже готовый написание команд может быть не множно отличатся делайте tab)
+   Комнды для настройки ospf
    ```
    show running-config (чтобы проверить если там что нибудь или нет)
    conf t
    router ospf
-     ospf router id 1.1.1.1 любые цифры
      passive interface default
-     network 172.16.100.0/29 area 0
-     network 172.16.10.0/26 area 0
-     network 172.16.4.0/28 area 0
+     network 172.16.100.0/29 area 0 сеть тунеля 
+     network 192.168.10.0/26 area 0 сеть в сторону hq-srv 
+     network 192.168.20.0/28 area 0 сеть в сторону hq-сli
+     area 0 authentication
    exit
-   interface gre1
+   interface gre1 тут вы указывете название вашего тунеля между hq-rtr и br-rtr
      no ip ospf passive
+     ip ospf authentication-key 1245 ваш ключ  
    exit
    do wr
    end
@@ -1181,13 +1181,8 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
    ```bash
    systemctl restart network
    ```
-   Проверьте соседей:
-   ```bash
-   vtysh
-   show ip ospf neighbor
-   ```
 
-#### 18.2 Настройка туннеля GRE и OSPF на BR-RTR
+#### 17.2 Настройка туннеля GRE и OSPF на BR-RTR
 
 <details>
   <summary>Развернуть инструкцию</summary>
@@ -1196,14 +1191,14 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
 
    Создайте каталог:
    ```bash
-   mkdir -p /etc/net/ifaces/gre1
+   mkdir /etc/net/ifaces/gre1
    ```
 
 2. **Настройка файла options для туннеля**
 
    Создайте и отредактируйте файл:
    ```bash
-   vi /etc/net/ifaces/gre1/options
+   mcedit /etc/net/ifaces/gre1/options
    ```
    Пример содержимого:
    ```
@@ -1211,16 +1206,15 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
    TUNREMOTE=172.16.4.2
    TUNTYPE=gre
    TYPE=iptun
-   TUNTTL=64
-   TUNMTU=1476
    TUNOPTIONS='ttl 64'
+   HOST=ens192
    ```
 
 3. **Настройка IP-адреса туннеля**
 
    Создайте файл:
    ```bash
-   vi /etc/net/ifaces/gre1/ipv4address
+   mcedit /etc/net/ifaces/gre1/ipv4address
    ```
    Пример:
    ```
@@ -1233,49 +1227,49 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
    ip a
    ```
 
-5. **Установка OSPF**
+5. **Настройка frr**
 
-   Установите пакет:
+   Добавьте службу `frr` в автозагрузку:
    ```bash
-   apt-get install frr -y
+   systemctl enable --now frr
    ```
-6. Добавьте службу `frr` в автозагрузку:
+   Отредактируйте конфигурационный файл демонов:
    ```bash
-   systemctl enable --now iptables
+   mcedit /etc/frr/demons
    ```
-7. Отредактируйте файл демонов:
-   ```bash
-   nano /etc/frr/demons
-   ```
-   Измените:
+   Найдите строку:
    ```
    ospfd=no
    ```
-   на:
+   Измените на:
    ```
    ospfd=yes
    ```
-8. **Настройка OSPF через vtysh**
+   Сохраните изменения.
+   
+   Перезагрузите службу frr:
+   ```
+   systemctl reboot frr
+   ```
+5. **Настройка OSPF через vtysh**
 
    Введите:
    ```bash
    vtysh
    ```
-   Затем выполните следующие команды:
+   Комнды для настройки ospf
    ```
-   show running-config
+   show running-config (чтобы проверить если там что нибудь или нет)
    conf t
-   interface <название_интерфейса_если_не_нужен>
-     shutdown
-   exit
    router ospf
-     ospf router id 172.16.5.1
      passive interface default
-     network 172.16.100.0/29 area 0
-     network 172.16.30.0/27 area 0
+     network 172.16.100.0/29 area 0 сеть тунеля 
+     network 192.168.30.0/27 area 0 сеть в сторону br-rtr
+     area 0 authentication
    exit
-   interface gre1
+   interface gre1 тут вы указывете название вашего тунеля между hq-rtr и br-rtr
      no ip ospf passive
+     ip ospf authentication-key 1245 ваш ключ  
    exit
    do wr
    end
