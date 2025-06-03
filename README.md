@@ -1311,16 +1311,26 @@ sudo su
    ```
 Перезагружаем сервер systemctl restart dhcpd и добавляем его в авто загрузку systemctl enable dhcpd
 
-6. На клиенте (например, HQ-CLI) Отключаем Network-manager если:
+6. На клиенте (например, HQ-CLI) Отключаем Network-manager если не отлючили в самом начале командой:
    ```bash
-   sudo dhclient -r
-   sudo dhclient
-   ip addr
+systemctl disable --now Network-manager 
    ```
-   Клиент должен получить адрес из диапазона 192.168.20.2–192.168.20.14, шлюз 192.168.20.1 и DNS 192.168.10.2.
+Теперь идёт в сетевой интерфейс клиента например ens192 и в файле options меняем на NV_CONTROLLED=no и DISABLED=no и создаём папку саб интерфейса командой mkdir /etc/net/ifaces192.200 и внутри файл options со следущим содержимым
 
+   Пример содержимого:
+   ```
+   TYPE=vlan
+   HOST=ens192
+   VID=200
+   DISABLED=no
+   BOOTPROTO=dhcp
+   ONBOOT=yes
+   CONFIG_IPV4=yes
+   ```
+Перезагружаем сеть командой systemctl restart network
+Если всё работает то должен появится интернет (в файле конфига dhcp поставьте dns сервер гугл если вы не настраивали ещё dns)
 
-#### 19.1 Конфигурация DNS (BIND)
+#### 19.2 Конфигурация DNS (BIND)
 сначала идём в options mcedit /etc/bind/options.conf тут делаем как на картинке сохраняем и перезагружаем bind командой systemctl restart bind и проверяем nslookup если всё хорошо копируем файлы которые ниже
 
 ![image](https://github.com/user-attachments/assets/409ae1c6-929b-4acb-9f28-fcb97e90aab1)
@@ -1346,3 +1356,5 @@ gclnk.com/Ce9hyOKh local.conf
    nslookup hq-rtr.au-team.irpo 127.0.0.1
    nslookup 192.168.10.1 127.0.0.1
    ```
+ПРОВЕРЯЕМ ВСЁ ОТ НАЧАЛО И ДО КОНЦА 
+С КЛИЕНТА ПОДКЛЮЧАЕМСЯ К СЕРВЕРАМ ПО SSH ПРОВЕРЯЕМ DHS SERVER И ПРОЧИЕ...
