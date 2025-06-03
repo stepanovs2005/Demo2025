@@ -702,6 +702,7 @@ sudo su
 #### 14.0 Задание Часового пояса (если не задан)
 ```bash
 timedatectl set-timezone Asia/Novosibirsk
+```
 
 #### 14.1 Задание hostname (если не задан)
 ```bash
