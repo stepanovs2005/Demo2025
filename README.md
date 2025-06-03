@@ -556,6 +556,32 @@ systemctl restart network
 ping ya.ru
 ```
 
+#### 9.5 Создание интерфейса в сторону br-rtr офиса
+
+Создайте или отредактируйте файл:
+```bash
+mcedit /etc/net/ifaces/ens224/ipv4address
+```
+Пример:
+```
+BOOTPROTO=static
+TYPE=eth
+```
+
+Создайте или отредактируйте файл:
+```bash
+mcedit /etc/net/ifaces/ens224/ipv4address
+```
+Пример:
+```
+192.168.30.1/27
+```
+
+Перезагрузите сеть:
+```bash
+systemctl reboot network
+```
+
 Обновите систему и установите frr:
 ```bash
 apt-get update -y && apt-get install frr -y
@@ -751,7 +777,7 @@ mcedit /etc/net/ifaces/ens192.100/ipv4route
 default via 192.168.10.1
 ```
 
-#### 14.5 Настройка DNS
+#### 14.4 Настройка DNS
 
 Создайте или отредактируйте файл:
 ```bash
@@ -800,15 +826,16 @@ systemctl restart network
 ping ya.ru
 ```
 
-Обновите пакеты и установите nano:
+Обновите пакеты и установите bind:
 ```bash
-apt-get update -y
+apt-get update -y && apt-get install bind bind-utils
 ```
 
 ---
 
-### 15. Создание локальных учётных записей на HQ-SRV
+### 15. Создание локальной учётной записи на HQ-SRV
 
+У вас -u будет другой 
 #### 15.1 Создание учётной записи sshuser
 ```bash
 useradd -u 1010 sshuser
@@ -828,7 +855,7 @@ usermod -a -G wheel sshuser
 
 Откройте файл:
 ```bash
-nano /etc/sudoers
+mcedit /etc/sudoers
 ```
 Найдите строку:
 ```
@@ -849,6 +876,53 @@ sudo su
 ```
 Если команда выполнена успешно – настройка корректна.
 
+#### 15.5 Настройка SSH на HQ-SRV
+
+1. Откройте файл конфигурации SSH:
+   ```bash
+   mcedit /etc/openssh/sshd_config
+   ```
+2. Внесите следующие изменения (раскомментируйте и измените значения ПАРАМЕТРЫ МОГУТ БЫТЬ ДРУГИМИ ЭТО ПРИМЕР):
+   - Измените порт с 22 на 2024:
+     ```diff
+     -#Port 22
+     +Port 2024
+     ```
+   - Ограничьте доступ только для пользователя `sshuser`:
+     ```diff
+     -#Match User anoucvs
+     +Match User sshuser
+     ```
+   - Задайте баннер:
+     ```diff
+     -#Banner none
+     +Banner /etc/openssh/Banner.txt
+     ```
+   - Ограничьте число попыток аутентификации:
+     ```diff
+     -#MaxAuthTries 6
+     +MaxAuthTries 2
+     ```
+3. Сохраните изменения (F2, затем F1O).
+
+4. Создайте файл баннера:
+   ```bash
+   mcedit /etc/openssh/Banner.txt
+   ```
+   Добавьте:
+   ```
+   Authorized access only
+   ```
+
+5. Перезагрузите службу SSH:
+   ```bash
+   systemctl restart sshd.service
+   ```
+
+6. Проверьте все ли правильно настроили подключившись по ssh с hq-rtr:
+   ```bash
+   ssh sshuser@192.168.10.2 -p 2024
+   ```
 ---
 
 ### 16. Настройка BR-SRV
@@ -856,27 +930,22 @@ sudo su
 <details>
   <summary>Развернуть инструкцию</summary>
 
+
+#### 16.0 Задание Часового пояса (если не задан)
+```bash
+timedatectl set-timezone Asia/Novosibirsk
+```
+
 #### 16.1 Задание hostname (если не задан)
 ```bash
 hostnamectl set-hostname br-srv.au.team.irpo && exec bash
 ```
 
-#### 16.2 Настройка интерфейса
-
-Откройте файл для `ens33`:
-```bash
-vi /etc/net/ifaces/ens33/options
-```
-Удалите строки:
-- NM_CONTROLLED  
-- DISABLED  
-- SYSTEMD_CONTROLLED
-
-#### 16.3 Задание IP-адреса
+#### 16.2 Задание IP-адреса
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/ipv4address
+mcedit /etc/net/ifaces/ens192/ipv4address
 ```
 Пример:
 ```
@@ -887,7 +956,7 @@ vi /etc/net/ifaces/ens33/ipv4address
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/ipv4route
+mcedit /etc/net/ifaces/ens192/ipv4route
 ```
 Добавьте:
 ```
@@ -898,16 +967,11 @@ default via 192.168.30.1
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/resolv.conf
+mcedit /etc/net/ifaces/ens192/resolv.conf
 ```
 Пример:
 ```
-nameserver 192.168.30.1
-```
-
-При необходимости удалите `systemd-networkd`:
-```bash
-apt-get remove systemd-networkd
+nameserver 8.8.8.8
 ```
 
 Перезагрузите сеть:
@@ -920,9 +984,6 @@ systemctl restart network
 ping ya.ru
 ```
 
-Обновите систему и установите nano:
-```bash
-apt-get update -y && apt-get install nano -y
 ```
 
 #### 16.6 Создание учётной записи sshuser
