@@ -320,11 +320,7 @@ timedatectl set-timezone Asia/Novosibirsk
 hostnamectl set-hostname hq-rtr.au-team.irpo && exec bash
 ```
 
-#### 7.2 Конфигурация интерфейса
-
-Отредактируйте файл `/etc/net/ifaces/ens192/options` тут нечего не надо редактировать 
-
-#### 7.3 Задание IP-адреса
+#### 7.2 Задание IP-адреса
 
 Создайте или отредактируйте файл:
 ```bash
@@ -336,7 +332,7 @@ mcedit /etc/net/ifaces/ens192/ipv4address
 172.16.4.2/28
 ```
 
-#### 7.4 Настройка маршрута по умолчанию
+#### 7.3 Настройка маршрута по умолчанию
 
 Создайте или отредактируйте файл:
 ```bash
@@ -347,7 +343,7 @@ nano /etc/net/ifaces/ens33/ipv4route
 default via 172.16.4.1
 ```
 
-#### 7.5 Настройка DNS
+#### 7.4 Настройка DNS
 
 Создайте или отредактируйте файл:
 ```bash
@@ -367,6 +363,11 @@ systemctl restart network
 ```bash
 ping ya.ru
 ```
+Установите frr:
+```bash
+apt-get update && apt-get install frr
+```
+
 #### 7.5 Создание VLAN для офиса HQ - VLAN100 (У ВАС БУДУТ ОТЛИЧАТСЯ VLAN)
 
 0. Создайте папку физического интерфейса к примеру ens224 и внутри создайте options со следущим содержимым BOOTPROTO=static TYPE=eth
@@ -401,7 +402,7 @@ ping ya.ru
 
 Скопируйте файл options из ens224.100 в папку ens224.200 и ens224.999  и вам надо будет просто отредактировать VID=ваш vlan по заданию
 
-#### 13.2 Создание VLAN для офиса HQ – VLAN200
+#### 7.6 Создание VLAN для офиса HQ – VLAN200
 
 1. Создайте каталог для подинтерфейса:
    ```bash
@@ -427,7 +428,7 @@ ping ya.ru
    ```
    Укажите IP-адрес в формате `ip/mask`.
 
-#### 13.3 Создание VLAN для управления – VLAN999
+#### 7.7 Создание VLAN для управления – VLAN999
 
 1. Создайте каталог для подинтерфейса:
    ```bash
@@ -435,7 +436,7 @@ ping ya.ru
    ```
 2. Отредактируйте файл настроек:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.999/options
+mcedit /etc/net/ifaces/<имя_физического_интерфейса>.999/options
    ```
    Пример содержимого:
    ```
@@ -501,53 +502,47 @@ systemctl restart network
 <details>
   <summary>Развернуть инструкцию</summary>
 
+#### 9.0 Задание Часового пояса (если не задан)
+```bash
+timedatectl set-timezone Asia/Novosibirsk
+```
+
 #### 9.1 Задание hostname (если не установлен)
 ```bash
 hostnamectl set-hostname br-rtr.au-team.irpo && exec bash
 ```
 
-#### 9.2 Конфигурация интерфейса
-
-Откройте файл настроек для `ens33`:
-```bash
-vi /etc/net/ifaces/ens33/options
-```
-Удалите строки:
-- NM_CONTROLLED
-- DISABLED
-- SYSTEMD_CONTROLLED
-
-#### 9.3 Назначение IP-адреса
+#### 9.2 Назначение IP-адреса
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/ipv4address
+mcedit /etc/net/ifaces/ens192/ipv4address
 ```
 Пример:
 ```
 172.16.5.2/28
 ```
 
-#### 9.4 Настройка маршрута по умолчанию
+#### 9.3 Настройка маршрута по умолчанию
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/ipv4route
+mcedit /etc/net/ifaces/ens192/ipv4route
 ```
 Добавьте:
 ```
 default via 172.16.5.1
 ```
 
-#### 9.5 Настройка DNS
+#### 9.4 Настройка DNS
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/resolv.conf
+mcedit /etc/net/ifaces/ens192/resolv.conf
 ```
 Пример:
 ```
-nameserver 172.16.5.1
+nameserver 8.8.8.8
 ```
 
 Перезагрузите сеть:
@@ -560,9 +555,9 @@ systemctl restart network
 ping ya.ru
 ```
 
-Обновите систему и установите nano:
+Обновите систему и установите frr:
 ```bash
-apt-get update -y && apt-get install nano -y
+apt-get update -y && apt-get install frr -y
 ```
 
 </details>
@@ -583,7 +578,7 @@ apt-get update -y && apt-get install nano -y
 
 #### 10.2 Настройка NAT
 ```bash
-iptables -t nat -A POSTROUTING -o ens33 -s 192.168.30.0/27 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o ens192 -s 192.168.30.0/27 -j MASQUERADE
 ```
 
 #### 10.3 Сохранение правил и автозапуск
@@ -594,7 +589,8 @@ systemctl enable --now iptables
 
 #### 10.4 Включение пересылки пакетов
 
-Убедитесь, что в файле `/etc/net/sysctl.conf` установлено:
+В файле устанавливаем `/etc/net/sysctl.conf`:
+mcedit /etc/net/sysctl.conf
 ```
 net.ipv4.ip_forward = 1
 ```
@@ -628,7 +624,7 @@ usermod -a -G wheel net_admin
 
 Откройте файл:
 ```bash
-nano /etc/sudoers
+mcedit /etc/sudoers
 ```
 Найдите строку:
 ```
@@ -675,7 +671,7 @@ usermod -a -G wheel net_admin
 
 Откройте файл:
 ```bash
-nano /etc/sudoers
+mcedit /etc/sudoers
 ```
 Найдите строку:
 ```
@@ -702,39 +698,51 @@ sudo su
 
 ### 14. Настройка HQ-SRV
 
+#### 14.0 Задание Часового пояса (если не задан)
+```bash
+timedatectl set-timezone Asia/Novosibirsk
+
 #### 14.1 Задание hostname (если не задан)
 ```bash
 hostnamectl set-hostname hq-srv.au.team.irpo && exec bash
 ```
+
 ---
 
-#### 14.2 Настройка интерфейса
+#### 14.2 Задание IP-адреса
 
-Откройте файл настроек для `ens33`:
+Cоздайте папку саб интерфейса 
 ```bash
-vi /etc/net/ifaces/ens33/options
+mkdir /etc/net/ifaces/ens192.100/
 ```
-Удалите (если присутствуют) строки:  
-- NM_CONTROLLED  
-- DISABLED  
-- SYSTEMD_CONTROLLED
-
-#### 14.3 Задание IP-адреса
+Отредактируйте файл options:
+   ```bash
+mcedit /etc/net/ifaces/<имя_физического_интерфейса>.100/options
+   ```
+   Пример содержимого:
+   ```
+   TYPE=vlan
+   HOST=ens192
+   VID=100
+   DISABLED=no
+   BOOTPROTO=static
+   ONBOOT=yes
+   CONFIG_IPV4=yes
+   ```
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/ipv4address
+mcedit /etc/net/ifaces/ens192.100/ipv4address
 ```
 Пример:
 ```
 192.168.10.2/26
 ```
-
-#### 14.4 Настройка маршрута по умолчанию
+#### 14.3 Настройка маршрута по умолчанию
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/ipv4route
+mcedit /etc/net/ifaces/ens192.100/ipv4route
 ```
 Добавьте:
 ```
@@ -745,16 +753,39 @@ default via 192.168.10.1
 
 Создайте или отредактируйте файл:
 ```bash
-vi /etc/net/ifaces/ens33/resolv.conf
+mcedit /etc/net/ifaces/ens192.100/resolv.conf
 ```
 Пример:
 ```
 nameserver 8.8.8.8
 ```
-
-удалите `systemd-networkd`:
+Cоздайте папку саб интерфейса для менаджмент интрефейса 
 ```bash
-apt-get remove systemd-networkd
+mkdir /etc/net/ifaces/ens192.999/
+```
+
+Отредактируйте файл options:
+   ```bash
+mcedit /etc/net/ifaces/<имя_физического_интерфейса>.999/options
+   ```
+   Пример содержимого:
+   ```
+   TYPE=vlan
+   HOST=ens192
+   VID=999
+   DISABLED=no
+   BOOTPROTO=static
+   ONBOOT=yes
+   CONFIG_IPV4=yes
+   ```
+
+Создайте или отредактируйте файл:
+```bash
+mcedit /etc/net/ifaces/ens192.999/ipv4address
+```
+Пример:
+```
+192.168.10.2/26
 ```
 
 Перезагрузите сеть:
@@ -769,7 +800,7 @@ ping ya.ru
 
 Обновите пакеты и установите nano:
 ```bash
-apt-get update -y && apt-get install nano -y
+apt-get update -y
 ```
 
 ---
