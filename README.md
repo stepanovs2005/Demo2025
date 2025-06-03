@@ -460,34 +460,40 @@ ping ya.ru
 
 ### 8. Настройка NAT для офиса HQ
 
-#### 8.1 Задание IP-адреса для офиса HQ
-Сначала Отредактируйте файл настроек:
-   ```bash
-   nano /etc/net/ifaces/ens33/options
-   ```
-   Пример содержимого:
-   ```bash
-   BOOTPROTO=static
-   TYPE=eth
-   ```
+У вас будет другие ПОДСЕТИ 
 
-В файле `/etc/net/ifaces/ens33/ipv4address` укажите:
-```
-192.168.10.1/26
-```
-
-#### 8.2 Настройка NAT
+#### 8.1 Настройка NAT
 ```bash
-iptables -t nat -A POSTROUTING -o ens33 -s 192.168.10.0/26 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o ens192 -s 192.168.10.0/26 -j MASQUERADE
 ```
+Сделайте тоже самое для второй сети 
 
+```bash
+iptables -t nat -A POSTROUTING -o ens192 -s 192.168.20.0/28 -j MASQUERADE
+```
 Сохраните правила и перезапустите:
 ```bash
 iptables-save > /etc/sysconfig/iptables
 systemctl enable --now iptables
+```
+Включаем пересылку пакетов
+
+Отредактируйте файл `/etc/net/sysctl.conf`:
+```bash
+mcedit /etc/net/sysctl.conf
+```
+Измените строку:
+```
+net.ipv4.ip_forward = 0
+```
+на:
+```
+net.ipv4.ip_forward = 1
+```
+Примените изменения:
+```bash
 systemctl restart network
 ```
-
 ---
 
 ### 9. Настройка сети для BR-RTR
