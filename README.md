@@ -555,6 +555,10 @@ systemctl restart network
 ```bash
 ping ya.ru
 ```
+Установите frr:
+```bash
+apt-get update && apt-get install frr
+```
 
 #### 9.5 Создание интерфейса в сторону br-rtr офиса
 
@@ -580,11 +584,6 @@ mcedit /etc/net/ifaces/ens224/ipv4address
 Перезагрузите сеть:
 ```bash
 systemctl reboot network
-```
-
-Обновите систему и установите frr:
-```bash
-apt-get update -y && apt-get install frr -y
 ```
 
 </details>
@@ -1086,21 +1085,22 @@ sudo su
 
 ### 17. Настройка динамической маршрутизации
 
-#### 18.1 Настройка туннеля GRE и OSPF на HQ-RTR
+#### 17.1 Настройка туннеля GRE и OSPF на HQ-RTR
 
 1. **Создание интерфейса туннеля**
 
    Создайте каталог для интерфейса туннеля:
    ```bash
-   mkdir -p /etc/net/ifaces/gre1
+   mkdir /etc/net/ifaces/gre1
    ```
 
 2. **Настройка файла options для туннеля**
 
    Создайте и отредактируйте файл:
    ```bash
-   vi /etc/net/ifaces/gre1/options
+   mcedit /etc/net/ifaces/gre1/options
    ```
+   У вас ip могут отличаться 
    Пример содержимого:
    ```
    TUNLOCAL=172.16.4.2
@@ -1114,7 +1114,7 @@ sudo su
 
    Создайте файл:
    ```bash
- nano /etc/net/ifaces/gre1/ipv4address
+   mcedit/etc/net/ifaces/gre1/ipv4address
    ```
    Пример:
    ```
@@ -1129,19 +1129,15 @@ sudo su
 
 https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13697-25.html
 
-5. **Установка и настройка OSPF**
+5. **Настройка OSPF**
 
-   Установите пакет `frr`:
-   ```bash
-   apt-get install frr -y
-   ```
    Добавьте службу `frr` в автозагрузку:
    ```bash
-   systemctl enable --now iptables
+   systemctl enable --now frr
    ```
    Отредактируйте конфигурационный файл демонов:
    ```bash
-   nano /etc/frr/demons
+   mcedit /etc/frr/demons
    ```
    Найдите строку:
    ```
@@ -1152,8 +1148,12 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
    ospfd=yes
    ```
    Сохраните изменения.
-
-6. **Настройка OSPF через vtysh**
+   
+   Перезагрузите службу frr:
+   ```
+   systemctl reboot frr
+   ```
+5. **Настройка OSPF через vtysh**
 
    Введите:
    ```bash
@@ -1161,13 +1161,10 @@ https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/1369
    ```
    Внутри выполните следующие команды: ('это конфиг уже готовый написание команд может быть не множно отличатся делайте tab)
    ```
-   show running-config    # Просмотр текущей конфигурации (при необходимости удалите ненужные интерфейсы)
+   show running-config (чтобы проверить если там что нибудь или нет)
    conf t
-   interface <название_интерфейса_если_не_нужен>
-     shutdown
-   exit
    router ospf
-     ospf router id 172.16.4.1
+     ospf router id 1.1.1.1 любые цифры
      passive interface default
      network 172.16.100.0/29 area 0
      network 172.16.10.0/26 area 0
