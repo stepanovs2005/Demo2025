@@ -984,8 +984,7 @@ systemctl restart network
 ping ya.ru
 ```
 
-```
-
+У вас -u будет другой 
 #### 16.6 Создание учётной записи sshuser
 ```bash
 useradd -u 1010 sshuser
@@ -1005,7 +1004,7 @@ usermod -a -G wheel sshuser
 
 Откройте файл:
 ```bash
-nano /etc/sudoers
+mcedit /etc/sudoers
 ```
 Найдите строку:
 ```
@@ -1030,15 +1029,16 @@ sudo su
 
 ---
 
-### 17. Настройка безопасного удалённого доступа на серверах HQ-SRV и BR-SRV
+#### 16.10 Настройка SSH на BR-SRV
 
-#### 17.1 Настройка SSH на HQ-SRV
+<details>
+  <summary>Развернуть инструкцию</summary>
 
 1. Откройте файл конфигурации SSH:
    ```bash
-   nano /etc/openssh/sshd_config
+   mcedit /etc/openssh/sshd_config
    ```
-2. Внесите следующие изменения (раскомментируйте и измените значения):
+2. Внесите следующие изменения (раскомментируйте и измените значения ПАРАМЕТРЫ МОГУТ БЫТЬ ДРУГИМИ ЭТО ПРИМЕР):
    - Измените порт с 22 на 2024:
      ```diff
      -#Port 22
@@ -1052,18 +1052,18 @@ sudo su
    - Задайте баннер:
      ```diff
      -#Banner none
-     +Banner /etc/openssh/sshd_config/Banner.txt
+     +Banner /etc/openssh/Banner.txt
      ```
    - Ограничьте число попыток аутентификации:
      ```diff
      -#MaxAuthTries 6
      +MaxAuthTries 2
      ```
-3. Сохраните изменения (Ctrl+O, затем Ctrl+X).
+3. Сохраните изменения (F2, затем F1O).
 
 4. Создайте файл баннера:
    ```bash
-   nano /etc/openssh/sshd_config/Banner.txt
+   mcedit /etc/openssh/Banner.txt
    ```
    Добавьте:
    ```
@@ -1075,57 +1075,16 @@ sudo su
    systemctl restart sshd.service
    ```
 
-#### 17.2 Настройка SSH на BR-SRV
-
-<details>
-  <summary>Развернуть инструкцию</summary>
-
-1. Откройте файл конфигурации:
+6. Проверьте все ли правильно настроили подключившись по ssh с hq-rtr:
    ```bash
-   nano /etc/openssh/sshd_config
-   ```
-2. Внесите следующие изменения:
-   - Измените порт:
-     ```diff
-     -#Port 22
-     +Port 2024
-     ```
-   - Ограничьте доступ для пользователя:
-     ```diff
-     -#Match User anoucvs
-     +Match User sshuser
-     ```
-   - Задайте баннер:
-     ```diff
-     -#Banner none
-     +Banner /etc/openssh/sshd_config/Banner.txt
-     ```
-   - Ограничьте число попыток аутентификации:
-     ```diff
-     -#MaxAuthTries 6
-     +MaxAuthTries 2
-     ```
-3. Сохраните файл (Ctrl+O, затем Ctrl+X).
-
-4. Создайте или отредактируйте баннер:
-   ```bash
-   nano /etc/openssh/sshd_config/Banner.txt
-   ```
-   Добавьте:
-   ```
-   Authorized access only
-   ```
-
-5. Перезагрузите службу SSH:
-   ```bash
-   systemctl restart sshd.service
+   ssh sshuser@192.168.30.2 -p 2024
    ```
 
 </details>
 
 ---
 
-### 18. Настройка динамической маршрутизации
+### 17. Настройка динамической маршрутизации
 
 #### 18.1 Настройка туннеля GRE и OSPF на HQ-RTR
 
