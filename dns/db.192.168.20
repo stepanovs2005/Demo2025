@@ -8,5 +8,4 @@ $TTL 86400
 )
     IN  NS hq-srv.au-team.irpo.
 
-1   IN  PTR hq-rtr.au-team.irpo.
 2   IN  PTR hq-cli.au-team.irpo.
