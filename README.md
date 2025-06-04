@@ -175,11 +175,14 @@ https://jodies.de/ipcalc - ip-калькулятор
 
 ## Решение
 ### 0.0 Настройка временых зон
-Делаем везде одной команой на isp надо установить tzdata командой apt-get install tzdata -y
+Делаем везде одной команой кроме isp cначало надо установить tzdata смотрите ниже
 ```bash
 timedatectl set-timezone Asia/Novosibirsk
 ```
-
+На ISP надо установить tzdata командой apt-get install tzdata -y
+```bash
+apt-get install tzdata -y
+```
 ### 1. Настройка имён устройств
 
 Присваиваем полные доменные имена устройствам согласно топологии:
