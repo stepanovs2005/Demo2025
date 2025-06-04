@@ -208,7 +208,7 @@ hostnamectl set-hostname isp && exec bash
 ```bash
 ip addr
 ```
-После чего пишем dhcpd и устанавливаем mc - apt-get update && apt-get install mc tzdata iptables после чего создаём интерфейсы (не забудь поменять сети br с hq в настройках это если что для Стёпы)
+После чего пишем dhcpd и устанавливаем mc - apt-get update && apt-get install mc tzdata iptables -y после чего создаём интерфейсы (не забудь поменять сети br с hq в настройках это если что для Стёпы)
 
 настройте DHCP, отредактировав соответствующий конфигурационный файл (`/etc/net/ifaces/ens192/options`).
 Внутри него 
@@ -222,7 +222,7 @@ TYPE=eth
 Перезапуск сетевых сервисов и установка необходимых пакетов:
 ```bash
 systemctl restart network
-apt-get update -y && apt-get install nano iptables -y
+apt-get update -y && apt-get install iptables -y
 clear
 ```
 
@@ -240,7 +240,7 @@ clear
    ```
 3. Отредактируйте файл настроек:
    ```bash
-   nano /etc/net/ifaces/ens224/options
+   mcedit /etc/net/ifaces/ens224/options
    ```
    Пример содержимого:
    ```bash
@@ -249,7 +249,7 @@ clear
    ```
 4. Создайте файл для задания IP-адреса (например, для подсети HQ):
    ```bash
-   nano /etc/net/ifaces/ens224/ipv4address
+   mcedit /etc/net/ifaces/ens224/ipv4address
    ```
    Пример:
    ```
@@ -291,7 +291,7 @@ systemctl enable --now iptables
 
 Отредактируйте файл `/etc/net/sysctl.conf`:
 ```bash
-nano /etc/net/sysctl.conf
+mcedit /etc/net/sysctl.conf
 ```
 Измените строку:
 ```
@@ -336,7 +336,7 @@ mcedit /etc/net/ifaces/ens192/ipv4address
 
 Создайте или отредактируйте файл:
 ```bash
-nano /etc/net/ifaces/ens33/ipv4route
+mcedit /etc/net/ifaces/ens192/ipv4route
 ```
 Пример:
 ```
@@ -347,7 +347,7 @@ default via 172.16.4.1
 
 Создайте или отредактируйте файл:
 ```bash
-nano /etc/net/ifaces/ens33/resolv.conf
+mcedit /etc/net/ifaces/ens192/resolv.conf
 ```
 Пример:
 ```
@@ -365,7 +365,7 @@ ping ya.ru
 ```
 Установите frr:
 ```bash
-apt-get update && apt-get install frr dhcp-server wget bind-utils
+apt-get update && apt-get install frr dhcp-server wget bind-utils -y
 ```
 
 #### 7.5 Создание VLAN для офиса HQ - VLAN100 (У ВАС БУДУТ ОТЛИЧАТСЯ VLAN)
@@ -378,7 +378,7 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils
    ```
 2. Отредактируйте файл настроек:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.100/options
+   mcedit /etc/net/ifaces/<имя_физического_интерфейса>.100/options
    ```
    Пример содержимого:
    ```
@@ -392,7 +392,7 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils
    ```
 3. Создайте файл для задания IP-адреса:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.100/ipv4address
+   mcedit /etc/net/ifaces/<имя_физического_интерфейса>.100/ipv4address
    ```
    Пример:
    ```
@@ -406,11 +406,11 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils
 
 1. Создайте каталог для подинтерфейса:
    ```bash
-   mkdir -p /etc/net/ifaces/<имя_физического_интерфейса>.200
+   mkdir /etc/net/ifaces/<имя_физического_интерфейса>.200
    ```
 2. Отредактируйте файл настроек:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.200/options
+   mcedit /etc/net/ifaces/<имя_физического_интерфейса>.200/options
    ```
    Пример содержимого:
    ```
@@ -424,7 +424,7 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils
    ```
 3. Создайте файл для задания IP-адреса:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.200/ipv4address
+   mcedit /etc/net/ifaces/<имя_физического_интерфейса>.200/ipv4address
    ```
    Укажите IP-адрес в формате `ip/mask`.
 
@@ -451,7 +451,7 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils
    ```
 3. Создайте файл для задания IP-адреса:
    ```bash
-   nano /etc/net/ifaces/<имя_физического_интерфейса>.999/ipv4address
+   mcedit /etc/net/ifaces/<имя_физического_интерфейса>.999/ipv4address
    ```
    Укажите IP-адрес в формате `ip/mask`.
 4. Перезагрузите сеть:
@@ -557,7 +557,7 @@ ping ya.ru
 ```
 Установите frr:
 ```bash
-apt-get update && apt-get install frr
+apt-get update && apt-get install frr -y
 ```
 
 #### 9.5 Создание интерфейса в сторону br-rtr офиса
@@ -597,7 +597,7 @@ systemctl reboot network
 
 #### 10.1 Задание IP-адреса для офиса BR
 
-В файле `/etc/net/ifaces/ens33/ipv4address` укажите:
+В файле `/etc/net/ifaces/ens224/ipv4address` укажите:
 ```
 192.168.30.1/27
 ```
@@ -827,7 +827,7 @@ ping ya.ru
 
 Обновите пакеты и установите bind:
 ```bash
-apt-get update -y && apt-get install bind bind-utils wget
+apt-get update -y && apt-get install bind bind-utils wget -y
 ```
 
 ---
