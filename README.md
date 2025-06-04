@@ -263,7 +263,6 @@ systemctl restart network
    systemctl restart network
    ip addr - для проверки что сделали правильно
    ```
-
 ---
 
 ### 4. Настройка NAT (На ISP)
@@ -287,7 +286,6 @@ iptables -t nat -A POSTROUTING -o ens192 -s 172.16.5.0/28 -j MASQUERADE
 iptables-save > /etc/sysconfig/iptables
 systemctl enable --now iptables
 ```
-
 ---
 
 ### 6. Включение пересылки пакетов
@@ -296,7 +294,8 @@ systemctl enable --now iptables
 ```bash
 mcedit /etc/net/sysctl.conf
 ```
-Измените строку net.ipv4.ip_forward:
+
+   - Измените строку net.ipv4.ip_forward:
      ```diff
      -#net.ipv4.ip_forward = 0
      +net.ipv4.ip_forward = 1
