@@ -1373,12 +1373,11 @@ sudo su
    ```
 
  Теперь идёт в интерфейс в котором мы у нас прописан dns-server и меняем:
- 
-     - nameserver:
+     - Меняем nameserver:
      ```diff
      -#nameserver 8.8.8.8
      +nameserver 127.0.0.1
-     ```
+     ``` 
 Перезагружаем сеть командой:
 ```bash
   systemctl reboot network
