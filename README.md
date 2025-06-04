@@ -271,12 +271,12 @@ systemctl restart network
 
 IP АДРЕСА БУДУТ ДРУГИЕ ЭТИ АДРЕСА ВЫБРАНЫ В КАЧЕСТВЕ ПРИМЕРА!!!!!!!!!
 
-#### 5.1 Пример для подсети HQ-RTR:
+#### 4.1 Пример для подсети HQ-RTR:
 ```bash
 iptables -t nat -A POSTROUTING -o ens192 -s 172.16.4.0/28 -j MASQUERADE
 ```
 
-#### 5.2 Пример для подсети BR-RTR:
+#### 4.2 Пример для подсети BR-RTR:
 ```bash
 iptables -t nat -A POSTROUTING -o ens192 -s 172.16.5.0/28 -j MASQUERADE
 ```
@@ -288,7 +288,7 @@ systemctl enable --now iptables
 ```
 ---
 
-### 6. Включение пересылки пакетов
+### 5. Включение пересылки пакетов
 
 Отредактируйте файл командой ниже по пути `/etc/net/sysctl.conf`:
 ```bash
@@ -307,31 +307,31 @@ systemctl restart network
 
 ---
 
-### 7. Настройка сети для HQ-RTR
+### 6. Настройка сети для HQ-RTR
 
-#### 7.0 Задание Часового пояса (если не задан)
+#### 6.0 Задание Часового пояса (если не задан)
 ```bash
 timedatectl set-timezone Asia/Novosibirsk
 ```
 
-#### 7.1 Задание hostname (если не задан)
+#### 6.1 Задание hostname (если не задан)
 ```bash
 hostnamectl set-hostname hq-rtr.au-team.irpo && exec bash
 ```
 
-#### 7.2 Задание IP-адреса
+#### 6.2 Задание IP-адреса
 
 Создайте или отредактируйте файл:
 ```bash
 mcedit /etc/net/ifaces/ens192/ipv4address
 ```
-ЭТО ПРИМЕР У ВАС БУДУТ ДРУГИЕ IP
+ЭТО ПРИМЕР У ВАС БУДУТ ДРУГИЕ ПОДСЕТИ
 Пишем:
 ```
 172.16.4.2/28
 ```
 
-#### 7.3 Настройка маршрута по умолчанию
+#### 6.3 Настройка маршрута по умолчанию
 
 Создайте или отредактируйте файл:
 ```bash
@@ -342,7 +342,7 @@ mcedit /etc/net/ifaces/ens192/ipv4route
 default via 172.16.4.1
 ```
 
-#### 7.4 Настройка DNS
+#### 6.4 Настройка DNS
 
 Создайте или отредактируйте файл:
 ```bash
@@ -362,15 +362,18 @@ systemctl restart network
 ```bash
 ping ya.ru
 ```
-Установите frr:
+Обновите спискок пакетов и установите всё необходимое командой:
 ```bash
 apt-get update && apt-get install frr dhcp-server wget bind-utils -y
 ```
 
-#### 7.5 Создание VLAN для офиса HQ - VLAN100 (У ВАС БУДУТ ОТЛИЧАТСЯ VLAN)
+#### 6.5 Создание VLAN для офиса HQ - VLAN100 (У ВАС БУДУТ ОТЛИЧАТСЯ VLAN)
 
-0. Создайте папку физического интерфейса к примеру ens224 и внутри создайте options со следущим содержимым BOOTPROTO=static TYPE=eth
-
+0. Создайте папку физического интерфейса к примеру ens224 и внутри создайте options со следущим содержимым:
+ ```bash
+   BOOTPROTO=static
+   TYPE=eth
+   ```
 1. Создайте каталог для подинтерфейса (замените `<имя_физического_интерфейса>` на фактическое имя, например, `ens224`):
    ```bash
    mkdir /etc/net/ifaces/<имя_физического_интерфейса>.100
@@ -397,11 +400,11 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils -y
    ```
    192.168.10.2/26
    ```
-У вас vlan будет отличатся  
+У ВАС VLAN Будут ОТЛИЧАТЬСЯ 
 
-Скопируйте файл options из ens224.100 в папку ens224.200 и ens224.999  и вам надо будет просто отредактировать VID=ваш vlan по заданию
+Скопируйте файл options из ens224.100 в папку ens224.200 и ens224.999 и вам надо будет просто отредактировать `VID=ваш vlan по заданию`
 
-#### 7.6 Создание VLAN для офиса HQ – VLAN200
+#### 6.6 Создание VLAN для офиса HQ – VLAN200
 
 1. Создайте каталог для подинтерфейса:
    ```bash
@@ -427,7 +430,7 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils -y
    ```
    Укажите IP-адрес в формате `ip/mask`.
 
-#### 7.7 Создание VLAN для управления – VLAN999
+#### 6.7 Создание VLAN для управления – VLAN999
 
 1. Создайте каталог для подинтерфейса:
    ```bash
@@ -453,17 +456,18 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils -y
    mcedit /etc/net/ifaces/<имя_физического_интерфейса>.999/ipv4address
    ```
    Укажите IP-адрес в формате `ip/mask`.
-4. Перезагрузите сеть:
+   
+5. Перезагрузите сеть:
    ```bash
    systemctl restart network
    ```
 ---
 
-### 8. Настройка NAT для офиса HQ
+### 7. Настройка NAT для офиса HQ
 
 У вас будет другие ПОДСЕТИ 
 
-#### 8.1 Настройка NAT
+#### 7.1 Настройка NAT
 ```bash
 iptables -t nat -A POSTROUTING -o ens192 -s 192.168.10.0/26 -j MASQUERADE
 ```
@@ -477,42 +481,40 @@ iptables -t nat -A POSTROUTING -o ens192 -s 192.168.20.0/28 -j MASQUERADE
 iptables-save > /etc/sysconfig/iptables
 systemctl enable --now iptables
 ```
-Включаем пересылку пакетов
+7.2 Включение пересылки пакетов
 
-Отредактируйте файл `/etc/net/sysctl.conf`:
+Отредактируйте файл командой ниже по пути `/etc/net/sysctl.conf`:
 ```bash
 mcedit /etc/net/sysctl.conf
 ```
-Измените строку:
-```
-net.ipv4.ip_forward = 0
-```
-на:
-```
-net.ipv4.ip_forward = 1
-```
-Примените изменения:
+
+   - Измените строку net.ipv4.ip_forward:
+     ```diff
+     -#net.ipv4.ip_forward = 0
+     +net.ipv4.ip_forward = 1
+     ```
+Примените изменения командой:
 ```bash
 systemctl restart network
 ```
 ---
 
-### 9. Настройка сети для BR-RTR
+### 8. Настройка сети для BR-RTR
 
 <details>
   <summary>Развернуть инструкцию</summary>
 
-#### 9.0 Задание Часового пояса (если не задан)
+#### 8.0 Задание Часового пояса (если не задан)
 ```bash
 timedatectl set-timezone Asia/Novosibirsk
 ```
 
-#### 9.1 Задание hostname (если не установлен)
+#### 8.1 Задание hostname (если не установлен)
 ```bash
 hostnamectl set-hostname br-rtr.au-team.irpo && exec bash
 ```
 
-#### 9.2 Назначение IP-адреса
+#### 8.2 Назначение IP-адреса
 
 Создайте или отредактируйте файл:
 ```bash
@@ -523,7 +525,7 @@ mcedit /etc/net/ifaces/ens192/ipv4address
 172.16.5.2/28
 ```
 
-#### 9.3 Настройка маршрута по умолчанию
+#### 8.3 Настройка маршрута по умолчанию
 
 Создайте или отредактируйте файл:
 ```bash
@@ -534,7 +536,7 @@ mcedit /etc/net/ifaces/ens192/ipv4route
 default via 172.16.5.1
 ```
 
-#### 9.4 Настройка DNS
+#### 8.4 Настройка DNS
 
 Создайте или отредактируйте файл:
 ```bash
@@ -559,11 +561,11 @@ ping ya.ru
 apt-get update && apt-get install frr -y
 ```
 
-#### 9.5 Создание интерфейса в сторону br-rtr офиса
+#### 8.5 Создание и настройка интерфейса в сторону br-rtr офиса
 
-Создайте или отредактируйте файл:
+Создайте или отредактируйте файл options:
 ```bash
-mcedit /etc/net/ifaces/ens224/ipv4address
+mcedit /etc/net/ifaces/ens224/options
 ```
 Пример:
 ```
@@ -571,7 +573,7 @@ BOOTPROTO=static
 TYPE=eth
 ```
 
-Создайте или отредактируйте файл:
+Создайте или отредактируйте файл ipv4address:
 ```bash
 mcedit /etc/net/ifaces/ens224/ipv4address
 ```
@@ -584,42 +586,48 @@ mcedit /etc/net/ifaces/ens224/ipv4address
 ```bash
 systemctl reboot network
 ```
-
+Проверьте всё ли появилось если нет значит вы косяк))  Ищите проблему и помните что времени всего 2:30 часа)
 </details>
 
 ---
 
-### 10. Настройка NAT для офиса BR
+### 9. Настройка NAT для офиса BR
 
 <details>
   <summary>Развернуть инструкцию</summary>
 
-#### 10.1 Задание IP-адреса для офиса BR
+#### 9.1 Задание IP-адреса для офиса BR
 
 В файле `/etc/net/ifaces/ens224/ipv4address` укажите:
 ```
 192.168.30.1/27
 ```
 
-#### 10.2 Настройка NAT
+#### 9.2 Настройка NAT
+У ВАС БУДУТ ДРУГИЕ ПОДСЕТИ
 ```bash
 iptables -t nat -A POSTROUTING -o ens192 -s 192.168.30.0/27 -j MASQUERADE
 ```
 
-#### 10.3 Сохранение правил и автозапуск
+#### 9.3 Сохранение правил и автозапуск
 ```bash
 iptables-save > /etc/sysconfig/iptables
 systemctl enable --now iptables
 ```
 
-#### 10.4 Включение пересылки пакетов
+#### 9.4 Включение пересылки пакетов
 
-В файле устанавливаем `/etc/net/sysctl.conf`:
+Отредактируйте файл командой ниже по пути `/etc/net/sysctl.conf`:
+```bash
 mcedit /etc/net/sysctl.conf
 ```
-net.ipv4.ip_forward = 1
-```
-и перезагрузите сеть:
+
+   - Измените строку net.ipv4.ip_forward:
+     ```diff
+     -#net.ipv4.ip_forward = 0
+     +net.ipv4.ip_forward = 1
+     ```
+Примените изменения командой:
 ```bash
 systemctl restart network
 ```
@@ -628,13 +636,60 @@ systemctl restart network
 
 ---
 
-### 11. Создание локальных учётных записей на HQ-RTR
+### 10. Создание локальных учётных записей на HQ-RTR
+
+#### 10.1 Создание учётной записи net_admin
+```bash
+useradd net_admin
+```
+Задайте пароль:
+```bash
+passwd net_admin
+```
+_(Пароль: **P@$$word**)_
+
+#### 10.2 Добавление в группу wheel
+```bash
+usermod -a -G wheel net_admin
+```
+
+#### 10.3 Редактирование файла sudoers
+
+Откройте файл:
+```bash
+mcedit /etc/sudoers
+```
+Найдите строку:
+```
+#WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL
+```
+Удалите символ `#` и сохраните изменения.
+
+#### 10.4 Проверка работы sudo
+
+Выйдите из root (команда `exit`) и выполните вход под пользователем `net_admin`:
+```bash
+login: net_admin  
+Password: P@$$word
+```
+Проверьте командой:
+```bash
+sudo su
+```
+Успешное выполнение команды подтверждает корректную настройку.
+
+---
+
+### 11. Создание локальных учётных записей на BR-RTR
+
+<details>
+  <summary>Развернуть инструкцию</summary>
 
 #### 11.1 Создание учётной записи net_admin
 ```bash
 useradd net_admin
 ```
-Задайте пароль:
+Установите пароль:
 ```bash
 passwd net_admin
 ```
@@ -655,56 +710,9 @@ mcedit /etc/sudoers
 ```
 #WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL
 ```
-Удалите символ `#` и сохраните изменения.
-
-#### 11.4 Проверка работы sudo
-
-Выйдите из root (команда `exit`) и выполните вход под пользователем `net_admin`:
-```bash
-login: net_admin  
-Password: P@$$word
-```
-Проверьте командой:
-```bash
-sudo su
-```
-Если приглашение изменилось, настройка выполнена корректно.
-
----
-
-### 12. Создание локальных учётных записей на BR-RTR
-
-<details>
-  <summary>Развернуть инструкцию</summary>
-
-#### 12.1 Создание учётной записи net_admin
-```bash
-useradd net_admin
-```
-Установите пароль:
-```bash
-passwd net_admin
-```
-_(Пароль: **P@$$word**)_
-
-#### 12.2 Добавление в группу wheel
-```bash
-usermod -a -G wheel net_admin
-```
-
-#### 12.3 Редактирование файла sudoers
-
-Откройте файл:
-```bash
-mcedit /etc/sudoers
-```
-Найдите строку:
-```
-#WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL
-```
 Удалите `#` и сохраните изменения.
 
-#### 12.4 Проверка sudo
+#### 11.4 Проверка sudo
 
 Выйдите из root и выполните вход под пользователем `net_admin`:
 ```bash
@@ -721,21 +729,21 @@ sudo su
 
 ---
 
-### 14. Настройка HQ-SRV
+### 12. Настройка HQ-SRV
 
-#### 14.0 Задание Часового пояса (если не задан)
+#### 12.0 Задание Часового пояса (если не задан)
 ```bash
 timedatectl set-timezone Asia/Novosibirsk
 ```
 
-#### 14.1 Задание hostname (если не задан)
+#### 12.1 Задание hostname (если не задан)
 ```bash
 hostnamectl set-hostname hq-srv.au.team.irpo && exec bash
 ```
 
 ---
 
-#### 14.2 Задание IP-адреса
+#### 12.2 Задание IP-адреса
 
 Cоздайте папку саб интерфейса 
 ```bash
@@ -764,7 +772,7 @@ mcedit /etc/net/ifaces/ens192.100/ipv4address
 ```
 192.168.10.2/26
 ```
-#### 14.3 Настройка маршрута по умолчанию
+#### 12.3 Настройка маршрута по умолчанию
 
 Создайте или отредактируйте файл:
 ```bash
@@ -775,7 +783,7 @@ mcedit /etc/net/ifaces/ens192.100/ipv4route
 default via 192.168.10.1
 ```
 
-#### 14.4 Настройка DNS
+#### 12.4 Настройка DNS
 
 Создайте или отредактируйте файл:
 ```bash
@@ -824,17 +832,17 @@ systemctl restart network
 ping ya.ru
 ```
 
-Обновите пакеты и установите bind:
+Обновите пакеты и установите всё необходимое командой:
 ```bash
 apt-get update -y && apt-get install bind bind-utils wget -y
 ```
 
 ---
 
-### 15. Создание локальной учётной записи на HQ-SRV
+### 13. Создание локальной учётной записи на HQ-SRV
 
 У вас -u будет другой 
-#### 15.1 Создание учётной записи sshuser
+#### 13.1 Создание учётной записи sshuser
 ```bash
 useradd -u 1010 sshuser
 ```
@@ -844,12 +852,12 @@ passwd sshuser
 ```
 _(Пароль: **P@ssw0rd**)_
 
-#### 15.2 Добавление в группу wheel
+#### 13.2 Добавление в группу wheel
 ```bash
 usermod -a -G wheel sshuser
 ```
 
-#### 15.3 Редактирование файла sudoers
+#### 13.3 Редактирование файла sudoers
 
 Откройте файл:
 ```bash
@@ -861,7 +869,7 @@ mcedit /etc/sudoers
 ```
 Удалите символ `#` и сохраните изменения.
 
-#### 15.4 Проверка sudo
+#### 13.4 Проверка sudo
 
 Выйдите из root и выполните вход под пользователем `sshuser`:
 ```bash
@@ -874,7 +882,7 @@ sudo su
 ```
 Если команда выполнена успешно – настройка корректна.
 
-#### 15.5 Настройка SSH на HQ-SRV
+#### 13.5 Настройка SSH на HQ-SRV
 
 1. Откройте файл конфигурации SSH:
    ```bash
@@ -923,23 +931,23 @@ sudo su
    ```
 ---
 
-### 16. Настройка BR-SRV
+### 14. Настройка BR-SRV
 
 <details>
   <summary>Развернуть инструкцию</summary>
 
 
-#### 16.0 Задание Часового пояса (если не задан)
+#### 14.0 Задание Часового пояса (если не задан)
 ```bash
 timedatectl set-timezone Asia/Novosibirsk
 ```
 
-#### 16.1 Задание hostname (если не задан)
+#### 14.1 Задание hostname (если не задан)
 ```bash
 hostnamectl set-hostname br-srv.au.team.irpo && exec bash
 ```
 
-#### 16.2 Задание IP-адреса
+#### 14.2 Задание IP-адреса
 
 Создайте или отредактируйте файл:
 ```bash
@@ -950,7 +958,7 @@ mcedit /etc/net/ifaces/ens192/ipv4address
 192.168.30.2/27
 ```
 
-#### 16.4 Настройка маршрута по умолчанию
+#### 14.4 Настройка маршрута по умолчанию
 
 Создайте или отредактируйте файл:
 ```bash
@@ -961,7 +969,7 @@ mcedit /etc/net/ifaces/ens192/ipv4route
 default via 192.168.30.1
 ```
 
-#### 16.5 Настройка DNS
+#### 14.5 Настройка DNS
 
 Создайте или отредактируйте файл:
 ```bash
@@ -983,7 +991,7 @@ ping ya.ru
 ```
 
 У вас -u будет другой 
-#### 16.6 Создание учётной записи sshuser
+#### 14.6 Создание учётной записи sshuser
 ```bash
 useradd -u 1010 sshuser
 ```
@@ -998,7 +1006,7 @@ _(Пароль: **P@ssw0rd**)_
 usermod -a -G wheel sshuser
 ```
 
-#### 16.8 Редактирование файла sudoers
+#### 14.8 Редактирование файла sudoers
 
 Откройте файл:
 ```bash
@@ -1027,7 +1035,7 @@ sudo su
 
 ---
 
-#### 16.10 Настройка SSH на BR-SRV
+#### 14.10 Настройка SSH на BR-SRV
 
 <details>
   <summary>Развернуть инструкцию</summary>
@@ -1082,9 +1090,9 @@ sudo su
 
 ---
 
-### 17. Настройка динамической маршрутизации
+### 15. Настройка динамической маршрутизации
 
-#### 17.1 Настройка туннеля GRE и OSPF на HQ-RTR
+#### 15.1 Настройка туннеля GRE и OSPF на HQ-RTR
 
 1. **Создание интерфейса туннеля**
 
@@ -1181,7 +1189,7 @@ sudo su
    systemctl restart network
    ```
 
-#### 17.2 Настройка туннеля GRE и OSPF на BR-RTR
+#### 15.2 Настройка туннеля GRE и OSPF на BR-RTR
 
 <details>
   <summary>Развернуть инструкцию</summary>
@@ -1289,16 +1297,19 @@ sudo su
 
 ---
 
-### 19. Настройка DHCP и DNS
+### 16. Настройка DHCP и DNS
 
-#### 19.1 Конфигурация DHCP
+#### 16.1 Конфигурация DHCP
 
-1. перейдите в папку /etc/dhcp/ В ней скачайте файл yNdsd0ur командой wget -O dhcpd.conf gclnk.com/yNdsd0ur и отредактируй под себя командой:
-
+1. перейдите в папку `/etc/dhcp/` В ней скачайте файл yNdsd0ur командой ниже:
+    ```bash
+    wget -O dhcpd.conf gclnk.com/yNdsd0ur
+    ```
+Отредактируйте файл `dhcpd` под cвою сеть командой:
    ```bash
    mcedit /etc/dhcp/dhcpd.conf
    ```
-   После чего идёт в файл dhcpd командой
+   После чего идёт в файл `dhcpd` командой:
 
    ```bash
    mcedit /etc/sysconfig/dhcpd
@@ -1308,13 +1319,34 @@ sudo su
   ```bash
   DHCPDARGS=ens224.200
    ```
-Перезагружаем сервер systemctl restart dhcpd и добавляем его в авто загрузку systemctl enable dhcpd
-
+Перезагружаем сервер командой:
+```bash
+ systemctl restart dhcpd
+   ```
+Добавляем его в авто-загрузку командой:
+```bash
+  systemctl enable dhcpd
+   ```
 6. На клиенте (например, HQ-CLI) Отключаем Network-manager если не отлючили в самом начале командой:
    ```bash
     systemctl disable --now Network-manager 
    ```
-Теперь идёт в сетевой интерфейс клиента например ens192 и в файле options меняем на NV_CONTROLLED=no и DISABLED=no и создаём папку саб интерфейса командой mkdir /etc/net/ifaces192.200 и внутри файл options со следущим содержимым
+Теперь идёт в сетевой интерфейс клиента например `ens192` и в файле `options`
+   - Меняем NV_CONTROLLED:
+     ```diff
+     -#NV_CONTROLLED=yes
+     +NV_CONTROLLED=no
+     ```
+     - Меняем DISABLED:
+     ```diff
+     -#DISABLED=yes
+     +DISABLED=no
+     ```
+ после чего создаём папку саб интерфейса командой
+ ```bash
+   mkdir /etc/net/ifaces192.200
+   ```
+И внутри файл options со следущим содержимым
 
    Пример содержимого:
    ```
@@ -1326,34 +1358,78 @@ sudo su
    ONBOOT=yes
    CONFIG_IPV4=yes
    ```
-Перезагружаем сеть командой systemctl restart network
-Если всё работает то должен появится интернет (в файле конфига dhcp поставьте dns сервер гугл если вы не настраивали ещё dns)
+Перезагружаем сеть командой 
+```bash
+  systemctl restart network
+   ```
+Если всё работает то должен появится интернет (в файле конфига dhcp поставьте dns сервер гугла если вы не настраивали ещё dns)
 
 #### 19.2 Конфигурация DNS (BIND)
-сначала идём в options mcedit /etc/bind/options.conf тут делаем как на картинке сохраняем и перезагружаем bind командой systemctl restart bind и проверяем nslookup если всё хорошо копируем файлы которые ниже
+сначала идём в `options` командой:
 
+```bash
+  mcedit /etc/bind/options.conf 
+   ```
+Тут делаем как на картинке
 ![image](https://github.com/user-attachments/assets/409ae1c6-929b-4acb-9f28-fcb97e90aab1)
+После сохраняем перезагружаем `bind` и добавляем его в авто-загрузку командами:
+```bash
+  systemctl reboot bind
+  systemctl enable bind
+   ```
 
-Потом копируем файлы 
-gclnk.com/p3STJhug db.192.168.10
+ Теперь идёт в интерфейс в котором мы у нас прописан dns-server и меняем:
+ ```bash
+  nameserver 8.8.8.8
+  nameserver 127.0.0.1
+   ```
+Перезагружаем сеть командой:
+```bash
+  systemctl reboot network
+   ```
+Проверяем командой:
+ ```bash
+  nslookup ya.ru
+   ```
+Если всё хорошо и нету ошибок переходим в папку `bind` командой:
+ ```bash
+  cd/etc/bind
+   ```
+Скачиваем и копируем файлы в папку `bind` командами:
+ ```bash
+  wget gclnk.com/p3STJhug
+  mv p3STJhug db.192.168.10
+   ```
 
-gclnk.com/Z7czmF7J db.192.168.20
+ ```bash
+  wget gclnk.com/Z7czmF7J
+  mv Z7czmF7J db.192.168.20
+   ```
 
-gclnk.com/4emEp6Xo db.au-team.irpo
+ ```bash
+  wget gclnk.com/4emEp6Xo
+  mv 4emEp6Xo db.au-team.irpo
+   ```
 
-gclnk.com/Ce9hyOKh local.conf
-
+ ```bash
+  wget gclnk.com/Ce9hyOKh
+  mv Ce9hyOKh local.conf
+   ```
+После того как всё сделали перезапускаем `bind` комндой:
+ 
+ ```bash
+  systemctl reboot bind
+   ```
 5. Проверьте конфигурацию:
    ```bash
    sudo named-checkconf
    sudo named-checkzone au-team.irpo /etc/bind/db.au-team.irpo
-   sudo systemctl restart bind9
-   sudo systemctl enable bind9
    ```
-6. Проверьте работу:
+6. Проверьте работу: У ВАС МОГУТ БЫТЬ РАЗНЫЕ IP 
    ```bash
    nslookup hq-rtr.au-team.irpo 127.0.0.1
    nslookup 192.168.10.1 127.0.0.1
    ```
-ПРОВЕРЯЕМ ВСЁ ОТ НАЧАЛО И ДО КОНЦА 
+ПРОВЕРЯЕМ ВСЁ ОТ НАЧАЛО И ДО КОНЦА А КАК Я НЕ СКАЖУ)))) 
+ЛАДНО ТАК СКАЖУ
 С КЛИЕНТА ПОДКЛЮЧАЕМСЯ К СЕРВЕРАМ ПО SSH ПРОВЕРЯЕМ DHS SERVER И ПРОЧИЕ...
