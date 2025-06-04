@@ -261,7 +261,7 @@ systemctl restart network
 5. Аналогичным образом задайте IP-адреса для ens256 в сторону HQ в моём случае это BR и перезагрузите сеть командой:
    ```bash
    systemctl restart network
-   ip addr - для проверки что всё работает
+   ip addr - для проверки что сделали правильно
    ```
 
 ---
@@ -296,14 +296,11 @@ systemctl enable --now iptables
 ```bash
 mcedit /etc/net/sysctl.conf
 ```
-Измените строку:
-```
-net.ipv4.ip_forward = 0
-```
-на:
-```
-net.ipv4.ip_forward = 1
-```
+Измените строку net.ipv4.ip_forward:
+     ```diff
+     -#net.ipv4.ip_forward = 0
+     +net.ipv4.ip_forward = 1
+     ```
 Примените изменения:
 ```bash
 systemctl restart network
