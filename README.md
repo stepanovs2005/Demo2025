@@ -402,7 +402,7 @@ apt-get update && apt-get install frr dhcp-server wget bind-utils -y
    ```
 У ВАС VLAN Будут ОТЛИЧАТЬСЯ 
 
-Скопируйте файл options из ens224.100 в папку ens224.200 и ens224.999 и вам надо будет просто отредактировать `VID=ваш vlan по заданию`
+Скопируйте файл options из ens224.100 в папку ens224.200 и ens224.999 и вам надо будет просто отредактировать VID=ваш vlan по заданию
 
 #### 6.6 Создание VLAN для офиса HQ – VLAN200
 
@@ -1081,7 +1081,7 @@ sudo su
    systemctl restart sshd.service
    ```
 
-6. Проверьте все ли правильно настроили подключившись по ssh с hq-rtr:
+6. Проверьте все ли правильно настроили подключившись по ssh с br-rtr:
    ```bash
    ssh sshuser@192.168.30.2 -p 2024
    ```
@@ -1145,14 +1145,11 @@ sudo su
    ```bash
    mcedit /etc/frr/daemons
    ```
-   Найдите строку:
-   ```
-   ospfd=no
-   ```
-   Измените на:
-   ```
-   ospfd=yes
-   ```
+   - Меняем ospfd:
+     ```diff
+     -#ospfd=no
+     +ospfd=yes
+     ```
    Сохраните изменения.
    
    Перезагрузите службу frr:
@@ -1244,14 +1241,11 @@ sudo su
    ```bash
    mcedit /etc/frr/daemons
    ```
-   Найдите строку:
-   ```
-   ospfd=no
-   ```
-   Измените на:
-   ```
-   ospfd=yes
-   ```
+     - Меняем ospfd:
+     ```diff
+     -#ospfd=no
+     +ospfd=yes
+     ```
    Сохраните изменения.
    
    Перезагрузите службу frr:
