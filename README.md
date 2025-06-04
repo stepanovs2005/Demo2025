@@ -290,7 +290,7 @@ systemctl enable --now iptables
 
 ### 6. Включение пересылки пакетов
 
-Отредактируйте файл `/etc/net/sysctl.conf`:
+Отредактируйте файл командой ниже по пути `/etc/net/sysctl.conf`:
 ```bash
 mcedit /etc/net/sysctl.conf
 ```
@@ -300,7 +300,7 @@ mcedit /etc/net/sysctl.conf
      -#net.ipv4.ip_forward = 0
      +net.ipv4.ip_forward = 1
      ```
-Примените изменения:
+Примените изменения командой:
 ```bash
 systemctl restart network
 ```
