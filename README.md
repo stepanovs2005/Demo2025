@@ -212,7 +212,7 @@ hostnamectl set-hostname isp && exec bash
 ```bash
 ip addr
 ```
-После чего пишем комнаду чтобы обновить спискок пакетов и установить всё не обходимое
+После чего пишем комнаду чтобы обновить спискок пакетов и установить всё необходимое
 ```bash
 apt-get update && apt-get install mc tzdata iptables -y
 ```
